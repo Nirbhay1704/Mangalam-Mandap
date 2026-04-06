@@ -467,6 +467,25 @@
                 right: 0;
             }
 
+            /* Overlay for mobile menu */
+            .menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 999;
+            }
+
+            .menu-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
             nav a.nav-link {
                 display: block;
                 font-size: 20px;
@@ -564,6 +583,7 @@
             <div class="toggle-bar"></div>
             <div class="toggle-bar"></div>
         </div>
+        <div class="menu-overlay" id="menu-overlay"></div>
         <nav id="nav-menu">
             <a href="index.html" class="nav-link">Home</a>
             <a href="index.html#services" class="nav-link">Services</a>
@@ -827,28 +847,35 @@
                 e.target.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
             }
         });
-        // Mobile Menu Toggle
+        // Mobile Menu Toggle Robust Logic
         const mobileMenu = document.getElementById('mobile-menu');
         const navMenu = document.getElementById('nav-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
 
-        if (mobileMenu) {
-            mobileMenu.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-                const bars = mobileMenu.querySelectorAll('.toggle-bar');
-                bars[0].style.transform = navMenu.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : 'none';
-                bars[1].style.opacity = navMenu.classList.contains('active') ? '0' : '1';
-                bars[2].style.transform = navMenu.classList.contains('active') ? 'rotate(-45deg) translate(7px, -7px)' : 'none';
-            });
-        }
-
-        // Close menu on link click
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                const bars = mobileMenu.querySelectorAll('.toggle-bar');
+        function toggleMenu() {
+            navMenu.classList.toggle('active');
+            if (menuOverlay) menuOverlay.classList.toggle('active');
+            const bars = mobileMenu.querySelectorAll('.toggle-bar');
+            if (navMenu.classList.contains('active')) {
+                bars[0].style.transform = 'rotate(45deg) translate(5px, 6px)';
+                bars[1].style.opacity = '0';
+                bars[2].style.transform = 'rotate(-45deg) translate(5px, -6px)';
+            } else {
                 bars[0].style.transform = 'none';
                 bars[1].style.opacity = '1';
                 bars[2].style.transform = 'none';
+            }
+        }
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', toggleMenu);
+            if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        }
+
+        // Close menu on link/button click
+        document.querySelectorAll('.nav-link, .btn-estimate').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navMenu && navMenu.classList.contains('active')) toggleMenu();
             });
         });
     </script>
