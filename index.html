@@ -1,1442 +1,391 @@
 <!DOCTYPE html>
-<html lang="gu">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=800">
-    <title>Mangalam Mandap</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mangalam Mandap - Premium Wedding & Event Decorations</title>
+    <meta name="description" content="Mangalam Mandap offers premium wedding and event decoration services. Discover our luxurious mandap decor, floral arrangements, and event planning.">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
         :root {
-            --primary-red: #d32f2f;
-            --primary-yellow: #fec200;
-            --text-dark: #333333;
-            --border-color: #cccccc;
+            --primary: #d4af37; /* Metallic Gold */
+            --primary-hover: #f1cd56;
+            --bg: #0f0a14; /* Deep dark moody background */
+            --glass-bg: rgba(15, 10, 20, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #f8f8f8;
+            --text-muted: #a19ea7;
+            --maroon: #5b0f15;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Mukta Vaani', sans-serif;
-            background-color: #f0f0f0;
-            color: var(--text-dark);
-            font-size: 14px;
-            line-height: 1.4;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
         }
 
-        .a4-container {
-            width: 210mm;
-            min-height: 297mm;
-            background-color: white;
-            margin: 0 auto 20px auto;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        h1, h2, h3, h4, .brand {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Glassmorphism Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand::before {
+            content: '✨';
+            font-size: 24px;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        nav a.nav-link {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
             position: relative;
-            overflow: hidden;
         }
 
-        /* Top Right Geometric Shapes */
-        .corner-shape {
+        nav a.nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        nav a.nav-link:hover {
+            color: var(--primary);
+        }
+
+        nav a.nav-link:hover::after {
+            width: 100%;
+        }
+
+        .btn-estimate {
+            background: linear-gradient(135deg, #d4af37, #f1cd56);
+            color: #0f0a14;
+            padding: 12px 28px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            display: inline-block;
+        }
+
+        .btn-estimate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 0 20px;
+            overflow: hidden;
+            background: url('./assets/hero_bg.png') center/cover no-repeat;
+            background-attachment: fixed;
+        }
+
+        .hero::before {
+            content: '';
             position: absolute;
             top: 0;
-            right: 0;
-            width: 250px;
-            height: 180px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(15, 10, 20, 0.8) 0%, rgba(15, 10, 20, 0.5) 50%, rgba(15, 10, 20, 1) 100%);
             z-index: 1;
         }
 
-        .corner-shape .black-shape {
-            position: absolute;
-            top: -50px;
-            right: -20px;
-            width: 250px;
-            height: 200px;
-            background-color: #2c2c2c;
-            transform: rotate(-15deg);
-        }
-
-        .corner-shape .red-shape {
-            position: absolute;
-            top: 60px;
-            right: -20px;
-            width: 150px;
-            height: 120px;
-            background-color: var(--primary-red);
-            transform: rotate(-15deg);
-        }
-
-        .since-text {
-            position: absolute;
-            top: 25px;
-            right: 60px;
-            color: white;
+        .hero-content {
+            position: relative;
             z-index: 2;
-            text-align: center;
+            max-width: 900px;
+            animation: fadeIn 1.5s ease-out;
         }
 
-        .since-text span {
+        .subtitle {
+            color: var(--primary);
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
             display: block;
-            font-size: 12px;
-            font-style: italic;
-            margin-bottom: -5px;
         }
 
-        .since-text strong {
-            font-size: 24px;
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Services Grid */
+        .services {
+            padding: 100px 50px;
+            background: var(--bg);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 42px;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+        
+        .section-header p {
+            color: var(--primary);
+            font-size: 18px;
             letter-spacing: 2px;
         }
 
-        /* Header Section */
-        .header {
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
             position: relative;
-            z-index: 2;
-            display: flex;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            overflow: hidden;
+            cursor: pointer;
         }
 
-        .logo-section {
-            width: 35%;
-            padding-right: 15px;
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.1);
         }
 
-        .logo-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: -10px;
-            font-family: 'Georgia', serif;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: baseline;
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
-        .logo-title span {
-            color: var(--primary-red);
-            font-size: 40px;
-            font-style: italic;
+        .service-card:hover::before {
+            opacity: 1;
         }
 
-        .logo-subtitle {
-            font-size: 11px;
-            font-weight: bold;
-            color: white;
-            background-color: var(--primary-red);
-            padding: 2px 8px;
+        .service-icon {
+            font-size: 48px;
+            margin-bottom: 25px;
             display: inline-block;
-            border-radius: 12px;
-            margin-top: 5px;
+            background: linear-gradient(135deg, #d4af37, #f1cd56);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .company-info {
-            width: 50%;
-            padding-top: 10px;
-            line-height: 1.6;
-            font-size: 12px;
-        }
-
-        .company-info .cert {
-            color: #666;
-            font-weight: bold;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .company-info .gst-pan {
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-
-        .company-info .gst-pan span {
-            color: #888;
-        }
-
-        .toll-free {
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            margin: 15px 0 5px 0;
-            color: #444;
-        }
-
-        .toll-free span {
-            color: #009933;
-            font-size: 18px;
-        }
-
-        .address-bar {
-            width: 100%;
-            text-align: center;
-            font-size: 11px;
-            color: #555;
+        .service-card h3 {
+            font-size: 24px;
             margin-bottom: 15px;
-            padding: 0 40px;
+            color: var(--text);
         }
 
-        /* Quotation Meta - Editable styling */
-        .quote-meta {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 15px;
         }
 
-        .editable {
-            outline: none;
-            padding: 2px 4px;
-            border: 1px dashed transparent;
-            min-width: 50px;
-            display: inline-block;
-            border-radius: 2px;
-        }
-
-        .editable:hover {
-            border: 1px dashed #cccccc;
-            background: #fafafa;
-            cursor: text;
-        }
-
-        .editable:focus {
-            border: 1px dashed var(--primary-red);
-            background: #fff9e6;
-        }
-
-        .venue-date {
-            display: flex;
-            border: 1px solid var(--border-color);
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .venue-date>div {
-            padding: 6px 10px;
-            flex: 1;
-        }
-
-        .venue-date .venue {
-            border-right: 1px solid var(--border-color);
-            flex: 1.5;
-        }
-
-        /* Table Rules */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th,
-        td {
-            border: 1px solid var(--border-color);
-            padding: 6px 8px;
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: var(--primary-yellow);
-            color: var(--text-dark);
-            font-weight: bold;
+        /* Footer CTA */
+        .cta-section {
+            padding: 100px 20px;
             text-align: center;
+            background: linear-gradient(rgba(15,10,20,0.9), rgba(15,10,20,0.9)), url('./assets/hero_bg.png') center/cover;
+            background-attachment: fixed;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
         }
 
-        .col-sn {
-            width: 40px;
+        .cta-section h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            padding: 40px 50px;
             text-align: center;
-            font-weight: bold;
-        }
-
-        .col-particular {
-            text-align: left;
-        }
-
-        .col-unit {
-            width: 80px;
-            text-align: center;
-        }
-
-        .col-length,
-        .col-width,
-        .col-height,
-        .col-qty,
-        .col-days {
-            width: 60px;
-            text-align: center;
-        }
-
-        .col-rate {
-            width: 90px;
-            text-align: right;
-        }
-
-        .col-amount {
-            width: 100px;
-            text-align: right;
-            font-weight: bold;
-        }
-
-        /* Input specific styles */
-        .col-length input,
-        .col-width input,
-        .col-height input,
-        .col-qty input,
-        .col-days input,
-        .col-rate input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: inherit;
-            text-align: inherit;
-            color: inherit;
-            font-weight: inherit;
-            padding: 2px;
-            outline: none;
-        }
-
-        .col-length input:focus,
-        .col-width input:focus,
-        .col-height input:focus,
-        .col-qty input:focus,
-        .col-days input:focus,
-        .col-rate input:focus {
-            background: #fff9e6;
-            outline: 1px dashed var(--primary-red);
-        }
-
-        /* remove spinners from inputs */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .col-sn input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: inherit;
-            text-align: center;
-            color: inherit;
-            font-weight: bold;
-            outline: none;
-        }
-
-        .col-sn input:focus {
-            background: #fff9e6;
-            outline: 1px dashed var(--primary-red);
-        }
-
-        .col-particular:empty:before {
-            content: "વિગત દાખલ કરો...";
-            color: #aaa;
-            pointer-events: none;
-        }
-
-        .unit-select {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: inherit;
-            text-align: center;
-            color: inherit;
-            outline: none;
-            cursor: pointer;
-            padding: 2px 0;
-        }
-
-        .unit-select:focus {
-            background: #fff9e6;
-            outline: 1px dashed var(--primary-red);
-        }
-
-        .category-row td {
-            text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-            padding: 8px;
-        }
-
-        .total-row td {
-            font-weight: bold;
+            color: var(--text-muted);
             font-size: 14px;
-            background-color: #f9f9f9;
         }
 
-        /* Terms List */
-        .terms-section {
-            margin-top: 40px;
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .term-row {
-            display: flex;
-            font-size: 14px;
-            border: 1px solid var(--border-color);
-            border-top: none;
-        }
-
-        .term-row:first-child {
-            border-top: 1px solid var(--border-color);
-        }
-
-        .term-no {
-            width: 40px;
-            padding: 6px;
-            text-align: center;
-            font-weight: bold;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .term-text {
-            padding: 6px 10px;
-            flex: 1;
-        }
-
-        .highlight-yellow {
-            background-color: #ffff00;
-            font-weight: bold;
-        }
-
-        /* Controls outside print */
-        .controls {
-            max-width: 210mm;
-            margin: 20px auto 10px auto;
-            padding: 10px;
-            background: #e8f4f8;
-            border: 1px solid #bce0ed;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .controls button {
-            padding: 8px 16px;
-            background: var(--primary-red);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .controls button:hover {
-            background: #b71c1c;
-        }
-
-        @media print {
-            body {
-                background-color: white;
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
             }
-
-            .a4-container {
-                margin: 0;
-                padding: 10mm;
-                box-shadow: none;
-                width: 100%;
+            .hero h1 {
+                font-size: 42px;
             }
-
-            .controls {
+            nav a.nav-link {
                 display: none;
             }
-
-            .editable:hover,
-            .col-length input:focus,
-            .col-width input:focus,
-            .col-height input:focus,
-            .col-qty input:focus,
-            .col-days input:focus,
-            .col-rate input:focus,
-            .unit-select:focus {
-                border: none;
-                background: transparent;
-                outline: none;
-            }
-
-            .unit-select {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-            }
-
-            .highlight-yellow {
-                background-color: #ffff00 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            th {
-                background-color: var(--primary-yellow) !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .corner-shape .black-shape,
-            .corner-shape .red-shape,
-            .logo-subtitle {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .services {
+                padding: 60px 20px;
             }
         }
-
-
     </style>
 </head>
-
 <body>
 
-    <!-- Controls that hide on print -->
-    <div class="controls">
-        <button onclick="addCategoryRow()">+ વિભાગ ઉમેરો</button>
-        <button onclick="addItemRow()">+ આઈટમ ઉમેરો</button>
-        <button onclick="window.print()" style="margin-left: 10px;">🖨️ પ્રિન્ટ</button>
-        <button onclick="saveAsImage()" style="margin-left: 10px; background: #17a2b8;">💾 સેવ (Image)</button>
-        <button onclick="shareToWhatsApp()" style="margin-left: 10px; background: #25d366;">🟢 શેર (WhatsApp)</button>
-    </div>
+    <header>
+        <a href="#" class="brand">Mangalam Mandap</a>
+        <nav>
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#services" class="nav-link">Services</a>
+            <!-- Crucial requirement: Estimate button redirected to index.html -->
+            <a href="estimate.html" class="btn-estimate">Estimate</a>
+        </nav>
+    </header>
 
-    <div class="a4-container">
-
-        <!-- Spiritual Header -->
-        <div
-            style="text-align: center; font-weight: bold; font-size: 16px; color: var(--primary-red); margin-bottom: 15px; letter-spacing: 1px;">
-            || જય શ્રી સ્વામિનારાયણ ||
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <span class="subtitle">Where Dreams Become Reality</span>
+            <h1>Crafting Unforgettable Wedding Experiences</h1>
+            <p>Experience the perfect blend of traditional Indian aesthetics and modern elegance. Premium Mandap decorations, exquisite floral arrangements, and complete event design.</p>
+            <a href="estimate.html" class="btn-estimate" style="font-size: 18px; padding: 15px 35px; margin-top: 20px;">Start Your Quotation</a>
         </div>
+    </section>
 
-        <!-- Quotation Details -->
-        <div class="venue-date">
-            <div class="venue">ગામ - <span class="editable" contenteditable="true" style="min-width: 150px;"></span>
-            </div>
-            <div class="date">પ્રસંગની તારીખ - <span class="editable" contenteditable="true"
-                    style="min-width: 150px;"></span></div>
+    <section class="services" id="services">
+        <div class="section-header">
+            <p>OUR EXPERTISE</p>
+            <h2>Premium Decoration Services</h2>
         </div>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🏛️</div>
+                <h3>Mandap Decor</h3>
+                <p>Luxurious, custom-designed mandaps adorned with fresh florals, rich draperies, and grand lighting to create a sacred and majestic space.</p>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">🌸</div>
+                <h3>Floral Arrangements</h3>
+                <p>Bespoke floral setups blending traditional marigolds and jasmine with exotic contemporary blooms for a breathtaking ambiance.</p>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">✨</div>
+                <h3>Illumination</h3>
+                <p>State-of-the-art lighting architectures, from warm traditional diyas and fairy lights to dynamic modern stage illumination.</p>
+            </div>
 
-        <div class="quote-meta" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                ગ્રાહકનું નામ - <span class="editable" contenteditable="true"
-                    style="min-width: 200px; border-bottom: 1px dotted #ccc;"></span>
-            </div>
-            <div>
-                મોબાઈલ નંબર - <span class="editable" contenteditable="true"
-                    style="min-width: 150px; border-bottom: 1px dotted #ccc;"></span>
-            </div>
-        </div>
-
-        <!-- Items Table -->
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-sn">ક્રમ</th>
-                    <th class="col-particular">વિગત</th>
-                    <th class="col-unit">એકમ</th>
-                    <th class="col-width">પહોળાઈ</th>
-                    <th class="col-length">લંબાઈ</th>
-                    <th class="col-height">ઊંચાઈ(ફૂટ)</th>
-                    <th class="col-qty">નંગ</th>
-                    <th class="col-days">દિવસ</th>
-                    <th class="col-rate">ભાવ</th>
-                    <th class="col-amount">રકમ</th>
-                </tr>
-            </thead>
-            <tbody id="quotation-body">
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="1"></td>
-                    <td class="col-particular editable" contenteditable="true">ડોમ સભામંડપ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="2"></td>
-                    <td class="col-particular editable" contenteditable="true">ડોમ રસોડા માટે</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="3"></td>
-                    <td class="col-particular editable" contenteditable="true">ડોમ બેક સાઇડ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="4"></td>
-                    <td class="col-particular editable" contenteditable="true">સ્ટેજ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="5"></td>
-                    <td class="col-particular editable" contenteditable="true">વ્યાસપીઠ સ્ટેજ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="6"></td>
-                    <td class="col-particular editable" contenteditable="true">વ્યાસપીઠ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="7"></td>
-                    <td class="col-particular editable" contenteditable="true">સ્ટેજ થીમ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="8"></td>
-                    <td class="col-particular editable" contenteditable="true">સ્ટેજ ફ્લોરીંગ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="9"></td>
-                    <td class="col-particular editable" contenteditable="true">અલગ સ્ટેજ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="10"></td>
-                    <td class="col-particular editable" contenteditable="true">રેલીંગ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="11"></td>
-                    <td class="col-particular editable" contenteditable="true">ડોમ ફોલરીંગ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="12"></td>
-                    <td class="col-particular editable" contenteditable="true">રસોડા ફોલરીંગ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="13"></td>
-                    <td class="col-particular editable" contenteditable="true">મંડપ ગાળા</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="14"></td>
-                    <td class="col-particular editable" contenteditable="true">કાઉન્ટર પાટ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="15"></td>
-                    <td class="col-particular editable" contenteditable="true">કાઉન્ટર ટેબર મઢીને તૈયાર</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="16"></td>
-                    <td class="col-particular editable" contenteditable="true">રાઉન્ડ ટેબલ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="17"></td>
-                    <td class="col-particular editable" contenteditable="true">સ્ટેજ દાદર</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="18"></td>
-                    <td class="col-particular editable" contenteditable="true">સોફા સ્ટીલ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="19"></td>
-                    <td class="col-particular editable" contenteditable="true">સોફા લેઘર</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="20"></td>
-                    <td class="col-particular editable" contenteditable="true">ખુરશી</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="21"></td>
-                    <td class="col-particular editable" contenteditable="true">લગ્ન મંડપ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="22"></td>
-                    <td class="col-particular editable" contenteditable="true">એન્ટ્રી બેલ્ટ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="23"></td>
-                    <td class="col-particular editable" contenteditable="true">એન્ટી ગેટ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="24"></td>
-                    <td class="col-particular editable" contenteditable="true">ગેટ કમાન</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="25"></td>
-                    <td class="col-particular editable" contenteditable="true">ગજીપો</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="26"></td>
-                    <td class="col-particular editable" contenteditable="true">ગાદલાં</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="27"></td>
-                    <td class="col-particular editable" contenteditable="true">તકિયાં</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="28"></td>
-                    <td class="col-particular editable" contenteditable="true">ઓશીકા</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="29"></td>
-                    <td class="col-particular editable" contenteditable="true">બ્લેન્કેટ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="30"></td>
-                    <td class="col-particular editable" contenteditable="true">રજાઇ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="31"></td>
-                    <td class="col-particular editable" contenteditable="true">સાઇડ પારટેશન</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="item-row">
-                    <td class="col-sn"><input type="number" class="sn-input" value="32"></td>
-                    <td class="col-particular editable" contenteditable="true">V.I .P. રૂમ</td>
-                    <td class="col-unit">
-                        <select class="unit-select">
-                            <option value="ચો.ફુટ">ચો.ફુટ</option>
-                            <option value="સેટ">સેટ</option>
-                            <option value="નંગ">નંગ</option>
-                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                        </select>
-                    </td>
-                    <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                    <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                    <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                    <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                    <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1">
-                    </td>
-                    <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                    <td class="col-amount amount-display editable" contenteditable="true">0</td>
-                </tr>
-                <tr class="total-row" id="total-row">
-                    <td colspan="8"></td>
-                    <td style="text-align: right;">ટોટલ</td>
-                    <td style="text-align: right;" id="grand-total">0.00</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Terms and Conditions -->
-        <div class="terms-section">
-            <div class="term-row">
-                <div class="term-no">૧</div>
-                <div class="term-text highlight-yellow editable" contenteditable="true">આ ભાવ સાત દિવસ અને
-                    ટ્રાન્સપોર્ટેશન સાથે ના છે</div>
-            </div>
-            <div class="term-row">
-                <div class="term-no">૨</div>
-                <div class="term-text highlight-yellow editable" contenteditable="true"
-                    style="display:inline-block; width:auto; border-right: none; flex:none;">ઉપર મુજબ નક્કી થયેલ કામ થી
-                    થતાં એકસ્ટ્રા કામ નું બિલ અલગ થી ચૂકવવાનું રહેશે.</div>
-            </div>
-            <div class="term-row">
-                <div class="term-no">૩</div>
-                <div class="term-text editable" contenteditable="true">પ્રસંગ ને અનુરૂપ તમામ પ્રકાર ની પરવાનગી ગ્રાહકે
-                    જાતે લેવાની રહેશે.</div>
-            </div>
-            <div class="term-row">
-                <div class="term-no">૪</div>
-                <div class="term-text highlight-yellow editable" contenteditable="true"
-                    style="display:inline-block; width:auto; border-right: none; flex:none;">કારીગર ને જમવા ની વ્યવસ્થા
-                    પાર્ટી એ આપવાની રહેશે.</div>
+            <div class="service-card">
+                <div class="service-icon">🎪</div>
+                <h3>Event Rentals</h3>
+                <p>Complete range of premium furniture, seating arrangements, carpets, and structural setups for events of any scale.</p>
             </div>
         </div>
+    </section>
 
-    </div>
+    <section class="cta-section" id="contact">
+        <h2>Ready to Plan Your Big Day?</h2>
+        <p style="color: var(--text-muted); margin-bottom: 40px; font-size: 18px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Let us bring your vision to life. Easily configure your event requirements and get a detailed quotation.
+        </p>
+        <a href="estimate.html" class="btn-estimate" style="font-size: 18px; padding: 15px 40px;">Generate Estimate Now</a>
+    </section>
 
-    <!-- JavaScript to auto-calculate totals -->
-    <script>
-        function formatNumber(num) {
-            // Drop decimals if they are .00 for a cleaner look
-            return num % 1 === 0 ? num.toString() : num.toFixed(2);
-        }
+    <footer class="footer">
+        <p>&copy; 2026 Mangalam Mandap Services. All Rights Reserved.</p>
+    </footer>
 
-        function calculateTotals() {
-            let grandTotal = 0;
-            const rows = document.querySelectorAll('.item-row');
-
-            rows.forEach(row => {
-                const qtyInput = row.querySelector('.qty-input');
-                const rateInput = row.querySelector('.rate-input');
-                const amountDisplay = row.querySelector('.amount-display');
-
-                if (qtyInput && rateInput && amountDisplay) {
-                    const lInput = row.querySelector('.l-input');
-                    const wInput = row.querySelector('.w-input');
-                    const hInput = row.querySelector('.h-input');
-
-                    const l = lInput && lInput.value ? parseFloat(lInput.value) : 0;
-                    const w = wInput && wInput.value ? parseFloat(wInput.value) : 0;
-                    const h = hInput && hInput.value ? parseFloat(hInput.value) : 0; // Not commonly requested, 0 default
-
-                    const qty = qtyInput && qtyInput.value ? parseFloat(qtyInput.value) : 0;
-                    const rate = rateInput && rateInput.value ? parseFloat(rateInput.value) : 0;
-
-                    const daysInput = row.querySelector('.days-input');
-                    const days = daysInput && daysInput.value ? parseFloat(daysInput.value) : 1;
-
-                    let amount = 0;
-                    const isManual = amountDisplay.dataset.manual === "true";
-
-                    if (!isManual) {
-                        if (l > 0 && w > 0) {
-                            amount = l * w * rate * days;
-                            if (qty > 0) amount *= qty; // Multiply qty if they also added pieces for multiple items of same L * W
-                        } else if (qty > 0) {
-                            amount = qty * rate * days;
-                        } else if (rate > 0) {
-                            amount = rate * days;
-                        }
-                        amountDisplay.innerText = formatNumber(amount);
-                    } else {
-                        amount = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
-                    }
-                    grandTotal += amount;
-                }
-            });
-
-            document.getElementById('grand-total').innerText = formatNumber(grandTotal);
-        }
-
-        window.onbeforeprint = function () { prepareForExport(); };
-        window.onafterprint = function () { restoreAfterExport(); };
-
-        function prepareForExport() {
-            document.querySelectorAll('.col-days, .col-rate').forEach(el => el.style.display = 'none');
-            const totalSpanner = document.querySelector('#total-row td:first-child');
-            if (totalSpanner) totalSpanner.setAttribute('colspan', '6');
-            document.querySelectorAll('.category-row td').forEach(el => el.setAttribute('colspan', '8'));
-        }
-
-        function restoreAfterExport() {
-            document.querySelectorAll('.col-days, .col-rate').forEach(el => el.style.display = '');
-            const totalSpanner = document.querySelector('#total-row td:first-child');
-            if (totalSpanner) totalSpanner.setAttribute('colspan', '8');
-            document.querySelectorAll('.category-row td').forEach(el => el.setAttribute('colspan', '10'));
-        }
-
-        // Function to bind event listeners securely
-        function bindInputs(row) {
-            const calcInputs = row.querySelectorAll('.l-input, .w-input, .h-input, .qty-input, .days-input, .rate-input');
-            const amountDisplay = row.querySelector('.amount-display');
-
-            calcInputs.forEach(input => {
-                input.addEventListener('input', () => {
-                    if (amountDisplay) amountDisplay.dataset.manual = "false";
-                    calculateTotals();
-                });
-            });
-
-            if (amountDisplay) {
-                amountDisplay.addEventListener('input', () => {
-                    amountDisplay.dataset.manual = "true";
-                    calculateTotals();
-                });
-                amountDisplay.addEventListener('blur', () => {
-                    if (amountDisplay.dataset.manual === "true") {
-                        let val = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
-                        amountDisplay.innerText = formatNumber(val);
-                    }
-                });
-            }
-
-            if (amountDisplay) {
-                amountDisplay.addEventListener('input', () => {
-                    amountDisplay.dataset.manual = "true";
-                    calculateTotals();
-                });
-                amountDisplay.addEventListener('blur', () => {
-                    if (amountDisplay.dataset.manual === "true") {
-                        let val = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
-                        amountDisplay.innerText = formatNumber(val);
-                    }
-                });
-            }
-        }
-
-        // Add Category Row
-        function addCategoryRow() {
-            const tbody = document.getElementById('quotation-body');
-            const newRow = document.createElement('tr');
-            newRow.className = 'category-row';
-            newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>`;
-            const totalRow = document.getElementById('total-row');
-            tbody.insertBefore(newRow, totalRow);
-        }
-
-        // Add Item Row
-        function addItemRow() {
-            const tbody = document.getElementById('quotation-body');
-            const totalRow = document.getElementById('total-row');
-            const newRow = document.createElement('tr');
-            newRow.className = 'item-row';
-
-            // Auto increment sn
-            const rows = document.querySelectorAll('.item-row');
-            const nextSn = rows.length + 1;
-
-            newRow.innerHTML = `
-                <td class="col-sn"><input type="number" class="sn-input" value="${nextSn}"></td>
-                <td class="col-particular editable" contenteditable="true"></td>
-                <td class="col-unit">
-                    <select class="unit-select">
-                        <option value="ચો.ફુટ">ચો.ફુટ</option>
-                        <option value="સેટ">સેટ</option>
-                        <option value="નંગ">નંગ</option>
-                        <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
-                    </select>
-                </td>
-                <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
-                <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
-                <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
-                <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
-                <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1"></td>
-                <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
-                <td class="col-amount amount-display editable" contenteditable="true">0</td>
-            `;
-            tbody.insertBefore(newRow, totalRow);
-            bindInputs(newRow);
-            calculateTotals();
-        }
-
-        // Add event listeners to initial inputs
-        document.addEventListener('DOMContentLoaded', () => {
-            const rows = document.querySelectorAll('.item-row');
-            rows.forEach(r => bindInputs(r));
-            calculateTotals();
-        });
-
-        // Image Export and Sharing logic
-        function captureImage(callback) {
-            const container = document.querySelector('.a4-container');
-            const controls = document.querySelector('.controls');
-            // Hide controls so they don't appear in the image
-            controls.style.display = 'none';
-            prepareForExport();
-
-            html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
-                restoreAfterExport();
-                controls.style.display = 'block';
-                const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                callback(imgData);
-            }).catch(err => {
-                restoreAfterExport();
-                controls.style.display = 'block';
-                console.error(err);
-                alert("Error capturing image");
-            });
-        }
-
-        function saveAsImage() {
-            captureImage(dataUrl => {
-                const link = document.createElement('a');
-                link.download = 'Quotation.jpg';
-                link.href = dataUrl;
-                link.click();
-            });
-        }
-
-        async function shareToWhatsApp() {
-            captureImage(async dataUrl => {
-                try {
-                    const res = await fetch(dataUrl);
-                    const blob = await res.blob();
-                    const file = new File([blob], 'Quotation.jpg', { type: 'image/jpeg' });
-
-                    if (navigator.share) {
-                        await navigator.share({
-                            title: 'Mangalam Mandap Quotation',
-                            files: [file]
-                        });
-                    } else {
-                        alert('System Share not supported on this device/browser (Works best on Mobile). Please click Save (Image) instead and attach it in WhatsApp.');
-                    }
-                } catch (err) {
-                    console.error('Error sharing:', err);
-                    alert('Sharing failed. Please save the image instead.');
-                }
-            });
-        }
-    </script>
 </body>
-
 </html>
