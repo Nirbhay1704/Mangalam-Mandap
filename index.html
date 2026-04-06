@@ -488,25 +488,6 @@
             }
         }
 
-        /* New Highlight Animation */
-        @keyframes shine {
-            0% { background-color: transparent; }
-            30% { background-color: #fff9c4; } /* Soft Light Yellow */
-            100% { background-color: transparent; }
-        }
-
-        .new-row-highlight {
-            animation: shine 2s ease-out;
-        }
-
-        .active-row {
-            border: 2px solid var(--primary-yellow) !important;
-        }
-
-        /* Visible indicator for last focused row */
-        .last-focused {
-            background-color: rgba(212, 175, 55, 0.05);
-            outline: 2px solid var(--primary-yellow);
         }
     </style>
 </head>
@@ -1338,38 +1319,17 @@
                 });
             }
 
-            // Track active row globally
-            const setAsFocused = () => {
-                document.querySelectorAll('.item-row, .category-row').forEach(r => r.classList.remove('last-focused'));
-                row.classList.add('last-focused');
-                window.lastFocusedRow = row; 
-            };
-
-            row.addEventListener('click', setAsFocused);
-            
-            // Also on focus of any input inside
-            row.querySelectorAll('input, select, .editable').forEach(input => {
-                input.addEventListener('focus', setAsFocused);
-            });
-        }
-
-        function highlightRow(row) {
-            // Force a reflow to restart animation if needed
-            row.classList.remove('new-row-highlight');
-            void row.offsetWidth; 
-            row.classList.add('new-row-highlight');
-            
-            setTimeout(() => {
-                row.classList.remove('new-row-highlight');
-            }, 3000);
-            
-            // Scroll into view
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Auto focus the particular cell
-            const particular = row.querySelector('.col-particular, [contenteditable="true"]');
-            if (particular) {
-                setTimeout(() => particular.focus(), 100);
+            if (amountDisplay) {
+                amountDisplay.addEventListener('input', () => {
+                    amountDisplay.dataset.manual = "true";
+                    calculateTotals();
+                });
+                amountDisplay.addEventListener('blur', () => {
+                    if (amountDisplay.dataset.manual === "true") {
+                        let val = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
+                        amountDisplay.innerText = formatNumber(val);
+                    }
+                });
             }
         }
 
@@ -1379,27 +1339,8 @@
             const newRow = document.createElement('tr');
             newRow.className = 'category-row';
             newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>`;
-            
-            // Custom binding for category row since it doesn't have the same structure
-            const setAsFocused = () => {
-                document.querySelectorAll('.item-row, .category-row').forEach(r => r.classList.remove('last-focused'));
-                newRow.classList.add('last-focused');
-                window.lastFocusedRow = newRow;
-            };
-            newRow.addEventListener('click', setAsFocused);
-            newRow.addEventListener('focus', setAsFocused);
-
-            const lastFocused = window.lastFocusedRow || document.querySelector('.last-focused');
             const totalRow = document.getElementById('total-row');
-            
-            if (lastFocused && lastFocused.parentNode === tbody) {
-                tbody.insertBefore(newRow, lastFocused.nextSibling);
-            } else {
-                tbody.insertBefore(newRow, totalRow);
-            }
-            
-            highlightRow(newRow);
-            setAsFocused();
+            tbody.insertBefore(newRow, totalRow);
         }
 
         // Add Item Row
@@ -1409,7 +1350,7 @@
             const newRow = document.createElement('tr');
             newRow.className = 'item-row';
 
-            // Calculate next SN based on current rows
+            // Auto increment sn
             const rows = document.querySelectorAll('.item-row');
             const nextSn = rows.length + 1;
 
@@ -1432,21 +1373,9 @@
                 <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
                 <td class="col-amount amount-display editable" contenteditable="true">0</td>
             `;
-
-            const lastFocused = window.lastFocusedRow || document.querySelector('.last-focused');
-            if (lastFocused && lastFocused.parentNode === tbody) {
-                tbody.insertBefore(newRow, lastFocused.nextSibling);
-            } else {
-                tbody.insertBefore(newRow, totalRow);
-            }
-
+            tbody.insertBefore(newRow, totalRow);
             bindInputs(newRow);
             calculateTotals();
-            highlightRow(newRow);
-            // Set the new row as the last focused one for subsequent additions
-            document.querySelectorAll('.item-row, .category-row').forEach(r => r.classList.remove('last-focused'));
-            newRow.classList.add('last-focused');
-            window.lastFocusedRow = newRow;
         }
 
         // Add event listeners to initial inputs
