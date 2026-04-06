@@ -94,6 +94,22 @@
             align-items: center;
         }
 
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .toggle-bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
         nav a.nav-link {
             text-decoration: none;
             color: var(--text);
@@ -427,8 +443,35 @@
         /* Responsive */
         @media (max-width: 768px) {
             header { padding: 15px 20px; }
-            .brand { font-size: 20px; }
-            nav { display: none; }
+            .brand-name { font-size: 18px; }
+            .brand-logo { height: 50px; }
+            
+            .menu-toggle { display: flex; }
+            
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 75%;
+                height: 100vh;
+                background: #ffffff;
+                flex-direction: column;
+                justify-content: center;
+                gap: 40px;
+                transition: right 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+                z-index: 1000;
+            }
+
+            nav.active {
+                right: 0;
+            }
+
+            nav a.nav-link {
+                display: block;
+                font-size: 20px;
+            }
+
             .gallery-grid { padding: 20px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
             .gallery-controls { flex-direction: column; gap: 20px; margin: 0 20px 40px; text-align: center; }
             .page-header { padding: 120px 20px 60px; }
@@ -516,7 +559,12 @@
             <img src="./assets/logo.jpg?v=2" alt="Mangalam Logo" class="brand-logo">
             <span class="brand-name">Mangalam Mandap</span>
         </a>
-        <nav>
+        <div class="menu-toggle" id="mobile-menu">
+            <div class="toggle-bar"></div>
+            <div class="toggle-bar"></div>
+            <div class="toggle-bar"></div>
+        </div>
+        <nav id="nav-menu">
             <a href="index.html" class="nav-link">Home</a>
             <a href="index.html#services" class="nav-link">Services</a>
             <a href="gallery.html" class="nav-link">Gallery</a>
@@ -778,6 +826,30 @@
             if (e.target.classList && e.target.classList.contains('media-item')) {
                 e.target.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
             }
+        });
+        // Mobile Menu Toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                const bars = mobileMenu.querySelectorAll('.toggle-bar');
+                bars[0].style.transform = navMenu.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : 'none';
+                bars[1].style.opacity = navMenu.classList.contains('active') ? '0' : '1';
+                bars[2].style.transform = navMenu.classList.contains('active') ? 'rotate(-45deg) translate(7px, -7px)' : 'none';
+            });
+        }
+
+        // Close menu on link click
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                const bars = mobileMenu.querySelectorAll('.toggle-bar');
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            });
         });
     </script>
 </body>

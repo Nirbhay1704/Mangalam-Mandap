@@ -93,6 +93,22 @@
             align-items: center;
         }
 
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .toggle-bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
         nav a.nav-link {
             text-decoration: none;
             color: var(--text);
@@ -346,18 +362,38 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            header {
-                padding: 15px 20px;
+            header { padding: 15px 20px; }
+            .brand-name { font-size: 18px; }
+            .brand-logo { height: 50px; }
+            
+            .menu-toggle { display: flex; }
+            
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 75%;
+                height: 100vh;
+                background: #ffffff;
+                flex-direction: column;
+                justify-content: center;
+                gap: 40px;
+                transition: right 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+                z-index: 1000;
             }
-            .hero h1 {
-                font-size: 42px;
+
+            nav.active {
+                right: 0;
             }
+
             nav a.nav-link {
-                display: none;
+                display: block;
+                font-size: 20px;
             }
-            .services {
-                padding: 60px 20px;
-            }
+
+            .hero h1 { font-size: 42px; }
+            .services { padding: 60px 20px; }
         }
     </style>
     <style>
@@ -427,7 +463,12 @@
             <img src="./assets/logo.jpg?v=2" alt="Mangalam Logo" class="brand-logo">
             <span class="brand-name">Mangalam Mandap</span>
         </a>
-        <nav>
+        <div class="menu-toggle" id="mobile-menu">
+            <div class="toggle-bar"></div>
+            <div class="toggle-bar"></div>
+            <div class="toggle-bar"></div>
+        </div>
+        <nav id="nav-menu">
             <a href="index.html" class="nav-link">Home</a>
             <a href="index.html#services" class="nav-link">Services</a>
             <a href="gallery.html" class="nav-link">Gallery</a>
