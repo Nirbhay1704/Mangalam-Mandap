@@ -408,11 +408,12 @@
         .controls {
             max-width: 210mm;
             margin: 20px auto 10px auto;
-            padding: 10px;
-            background: #e8f4f8;
-            border: 1px solid #bce0ed;
-            border-radius: 5px;
+            padding: 15px;
+            background: #ffffff;
+            border: 1px solid #eeeeee;
+            border-radius: 10px;
             text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
         .controls button {
@@ -494,6 +495,8 @@
 
     <!-- Controls that hide on print -->
     <div class="controls">
+        <a href="index.html" style="text-decoration: none; margin-right: 15px; color: var(--primary-red); font-weight: bold;">🏠 Home</a>
+        <a href="gallery.html" style="text-decoration: none; margin-right: 15px; color: var(--primary-red); font-weight: bold;">🖼️ Gallery</a>
         <button onclick="addCategoryRow()">+ વિભાગ ઉમેરો</button>
         <button onclick="addItemRow()">+ આઈટમ ઉમેરો</button>
         <button onclick="window.print()" style="margin-left: 10px;">🖨️ પ્રિન્ટ</button>

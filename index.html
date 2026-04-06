@@ -9,14 +9,16 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
         :root {
-            --primary: #d4af37; /* Metallic Gold */
-            --primary-hover: #f1cd56;
-            --bg: #0f0a14; /* Deep dark moody background */
-            --glass-bg: rgba(15, 10, 20, 0.7);
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text: #f8f8f8;
-            --text-muted: #a19ea7;
-            --maroon: #5b0f15;
+            --primary: #c5a02c; /* More visible gold on light bg */
+            --primary-hover: #b38b1f;
+            --bg: #ffffff; 
+            --section-bg: #fdfaf5; /* Very soft warm ivory */
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --card-bg: #ffffff;
+            --text: #2d262a; /* Deep charcoal with a hint of purple */
+            --text-muted: #6b6267;
+            --maroon: #8b0000;
+            --border: rgba(197, 160, 44, 0.15);
         }
 
         * {
@@ -57,20 +59,32 @@
         }
 
         .brand {
-            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            height: 70px;
+            width: auto;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .brand:hover .brand-logo {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 24px;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand::before {
-            content: '✨';
-            font-size: 24px;
+            font-family: 'Playfair Display', serif;
         }
 
         nav {
@@ -141,6 +155,17 @@
             background-attachment: fixed;
         }
 
+        /* 3D Particle Hero Canvas */
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .hero::before {
             content: '';
             position: absolute;
@@ -148,15 +173,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, rgba(15, 10, 20, 0.8) 0%, rgba(15, 10, 20, 0.5) 50%, rgba(15, 10, 20, 1) 100%);
-            z-index: 1;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.9) 100%);
+            z-index: 2;
         }
 
         .hero-content {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             max-width: 900px;
             animation: fadeIn 1.5s ease-out;
+            perspective: 1000px;
         }
 
         .subtitle {
@@ -173,11 +199,11 @@
             font-weight: 700;
             line-height: 1.1;
             margin-bottom: 30px;
-            background: linear-gradient(to right, #fff, var(--primary));
+            background: linear-gradient(to right, var(--text), var(--primary));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
         .hero p {
@@ -192,7 +218,7 @@
         /* Services Grid */
         .services {
             padding: 100px 50px;
-            background: var(--bg);
+            background: var(--section-bg);
         }
 
         .section-header {
@@ -222,21 +248,23 @@
 
         .service-card {
             background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 15px;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 20px;
             padding: 40px 30px;
             text-align: center;
-            transition: all 0.4s ease;
-            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
             position: relative;
             overflow: hidden;
             cursor: pointer;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         .service-card:hover {
             transform: translateY(-10px);
-            border-color: rgba(212, 175, 55, 0.5);
-            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(197, 160, 44, 0.15);
         }
 
         .service-card::before {
@@ -246,7 +274,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle at center, rgba(197, 160, 44, 0.1) 0%, transparent 70%);
             opacity: 0;
             transition: opacity 0.4s ease;
         }
@@ -259,16 +287,24 @@
             font-size: 48px;
             margin-bottom: 25px;
             display: inline-block;
-            background: linear-gradient(135deg, #d4af37, #f1cd56);
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            transform: translateZ(30px);
+            transition: transform 0.4s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: translateZ(60px) scale(1.1);
         }
 
         .service-card h3 {
             font-size: 24px;
             margin-bottom: 15px;
             color: var(--text);
+            transform: translateZ(20px);
+            transition: transform 0.4s ease;
         }
 
         .service-card p {
@@ -280,15 +316,17 @@
         .cta-section {
             padding: 100px 20px;
             text-align: center;
-            background: linear-gradient(rgba(15,10,20,0.9), rgba(15,10,20,0.9)), url('./assets/hero_bg.png') center/cover;
+            background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('./assets/hero_bg.png') center/cover;
             background-attachment: fixed;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
         }
 
         .cta-section h2 {
             font-size: 48px;
             margin-bottom: 20px;
+            color: var(--text);
         }
 
         .footer {
@@ -296,6 +334,8 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 14px;
+            background: #ffffff;
+            border-top: 1px solid var(--border);
         }
 
         /* Animations */
@@ -320,20 +360,84 @@
             }
         }
     </style>
+    <style>
+        /* Preloader Style */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .loader-content {
+            text-align: center;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .loader-logo {
+            display: none; /* Logo already contains text */
+        }
+
+        .loader-img {
+            width: 120px;
+            height: auto;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .preloader-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
 </head>
 <body>
 
+    <div id="preloader">
+        <div class="loader-content">
+            <img src="./assets/logo.jpg?v=2" alt="Logo" class="loader-img">
+            <div class="loader-logo">MANGALAM</div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            setTimeout(() => {
+                preloader.classList.add('preloader-hidden');
+            }, 500); // Small buffer for smoothness
+        });
+    </script>
+
     <header>
-        <a href="#" class="brand">Mangalam Mandap</a>
+        <a href="index.html" class="brand">
+            <img src="./assets/logo.jpg?v=2" alt="Mangalam Logo" class="brand-logo">
+            <span class="brand-name">Mangalam Mandap</span>
+        </a>
         <nav>
-            <a href="#home" class="nav-link">Home</a>
-            <a href="#services" class="nav-link">Services</a>
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#services" class="nav-link">Services</a>
+            <a href="gallery.html" class="nav-link">Gallery</a>
             <!-- Crucial requirement: Estimate button redirected to index.html -->
             <a href="estimate.html" class="btn-estimate">Estimate</a>
         </nav>
     </header>
 
     <section class="hero" id="home">
+        <canvas id="hero-canvas"></canvas>
         <div class="hero-content">
             <span class="subtitle">Where Dreams Become Reality</span>
             <h1>Crafting Unforgettable Wedding Experiences</h1>
@@ -387,5 +491,71 @@
         <p>&copy; 2026 Mangalam Mandap Services. All Rights Reserved.</p>
     </footer>
 
+    <script>
+        // 3D Particles Animation for Hero
+        const canvas = document.getElementById('hero-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.z = Math.random() * 1000;
+                this.size = Math.random() * 2 + 0.5;
+                this.speed = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.z -= this.speed;
+                if (this.z <= 0) this.z = 1000;
+            }
+            draw() {
+                const scale = 300 / (this.z + 1);
+                const x2d = (this.x - canvas.width / 2) * scale + canvas.width / 2;
+                const y2d = (this.y - canvas.height / 2) * scale + canvas.height / 2;
+                const depth = (1000 - this.z) / 1000;
+                ctx.fillStyle = `rgba(197, 160, 44, ${depth * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(x2d, y2d, this.size * scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 200; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // 3D Tilt Effect for Cards
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                const dx = (x - xc) / (rect.width / 2);
+                const dy = (y - yc) / (rect.height / 2);
+                card.style.transform = `perspective(1000px) rotateX(${-dy * 15}deg) rotateY(${dx * 15}deg) translateY(-10px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+    </script>
 </body>
 </html>
