@@ -2634,6 +2634,15 @@
                 
                 if (!loaded) {
                     clearAllInputs();
+                    
+                    // Repeatedly clear inputs to override any asynchronous browser autocompletion
+                    let clearCount = 0;
+                    const clearTimer = setInterval(() => {
+                        clearAllInputs();
+                        clearCount++;
+                        if (clearCount >= 10) clearInterval(clearTimer);
+                    }, 50);
+
                     const rows = document.querySelectorAll('.item-row');
                     rows.forEach(row => {
                         if (!row.querySelector('.col-actions')) {
@@ -2669,10 +2678,10 @@
 
                 calculateTotals();
                 
-                // Finished loading, clear flag after a small buffer to ignore autocomplete triggers
+                // Finished loading, clear flag after page settles
                 setTimeout(() => {
                     isPageLoading = false;
-                }, 1000);
+                }, 600);
             });
 
             // Set up auto-save listeners on input and change
