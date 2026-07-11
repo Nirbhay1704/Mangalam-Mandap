@@ -189,7 +189,7 @@
             margin-bottom: 10px;
         }
 
-        .editable {
+        span.editable {
             outline: none;
             padding: 2px 4px;
             border: 1px dashed transparent;
@@ -198,15 +198,29 @@
             border-radius: 2px;
         }
 
-        .editable:hover {
+        span.editable:hover {
             border: 1px dashed #cccccc;
             background: #fafafa;
             cursor: text;
         }
 
-        .editable:focus {
+        span.editable:focus {
             border: 1px dashed var(--primary-red);
             background: #fff9e6;
+        }
+
+        td.editable {
+            outline: none;
+        }
+
+        td.editable:hover {
+            background: #fafafa;
+            cursor: text;
+        }
+
+        td.editable:focus {
+            background: #fff9e6;
+            outline: 1px dashed var(--primary-red);
         }
 
         .venue-date {
