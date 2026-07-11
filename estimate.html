@@ -1708,6 +1708,7 @@
         if (!localStorage.getItem('mangalam_mandap_current_id')) {
             localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
         }
+        let isPageLoading = true;
         let isResetting = false;
         let db = null;
         let syncTimeout = null;
@@ -1879,6 +1880,7 @@
 
         // Save data to localStorage and Firestore
         function saveData(immediate = false) {
+            if (isPageLoading && !immediate) return;
             const villageVal = document.getElementById('village-input').innerText.trim();
             const customerVal = document.getElementById('customer-name-input').innerText.trim();
             const mobileVal = document.getElementById('mobile-input').innerText.trim();
@@ -2646,6 +2648,8 @@
                             row.appendChild(td);
                         }
                     });
+                    // Save default template state under the new currentSheetId immediately
+                    saveData(true);
                 }
                 
                 const rows = document.querySelectorAll('.item-row');
@@ -2664,6 +2668,11 @@
                 }
 
                 calculateTotals();
+                
+                // Finished loading, clear flag after a small buffer to ignore autocomplete triggers
+                setTimeout(() => {
+                    isPageLoading = false;
+                }, 1000);
             });
 
             // Set up auto-save listeners on input and change
