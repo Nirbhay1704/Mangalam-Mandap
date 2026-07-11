@@ -15,7 +15,7 @@
             --primary-red: #d32f2f;
             --primary-yellow: #fec200;
             --text-dark: #333333;
-            --border-color: #cccccc;
+            --border-color: #888888;
         }
 
         * {
@@ -2321,16 +2321,60 @@
             }
         }
 
+        // Clear all input values from the DOM
+        function clearAllInputs() {
+            const villageEl = document.getElementById('village-input');
+            const dateEl = document.getElementById('event-date-input');
+            const nameEl = document.getElementById('customer-name-input');
+            const mobileEl = document.getElementById('mobile-input');
+            const grandTotalEl = document.getElementById('grand-total');
+
+            if (villageEl) villageEl.innerText = '';
+            if (dateEl) dateEl.innerText = '';
+            if (nameEl) nameEl.innerText = '';
+            if (mobileEl) mobileEl.innerText = '';
+            if (grandTotalEl) {
+                grandTotalEl.innerText = '0.00';
+                grandTotalEl.dataset.manual = "false";
+            }
+
+            document.querySelectorAll('.item-row').forEach(row => {
+                const wIn = row.querySelector('.w-input');
+                const lIn = row.querySelector('.l-input');
+                const hIn = row.querySelector('.h-input');
+                const qtyIn = row.querySelector('.qty-input');
+                const daysIn = row.querySelector('.days-input');
+                const rateIn = row.querySelector('.rate-input');
+                const amtEl = row.querySelector('.col-amount');
+                const unitSel = row.querySelector('.unit-select');
+
+                if (wIn) wIn.value = '';
+                if (lIn) lIn.value = '';
+                if (hIn) hIn.value = '';
+                if (qtyIn) qtyIn.value = '';
+                if (daysIn) daysIn.value = '';
+                if (rateIn) rateIn.value = '';
+                if (amtEl) amtEl.innerText = '0';
+                if (unitSel) unitSel.value = 'ચો.ફુટ';
+            });
+        }
+
         // Reset the sheet
         // This archives the current sheet to history, generates a new sheet ID, and reloads
         function confirmReset() {
             if (confirm("નવી શીટ શરૂ કરવાથી જૂનો ડેટા સાફ થઈ જશે. શું તમે સહમત છો?")) {
                 isResetting = true;
-                saveData();
-
+                
+                // Clear inputs immediately before reload to prevent browser cache restoration
+                clearAllInputs();
+                
                 currentSheetId = Date.now().toString();
                 localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
                 localStorage.removeItem('mangalam_mandap_estimate');
+                
+                // Save empty state to remote DB under new ID immediately
+                saveData(true);
+                
                 window.location.reload();
             }
         }
@@ -2497,6 +2541,7 @@
                 startRealTimeSync();
                 
                 if (!loaded) {
+                    clearAllInputs();
                     const rows = document.querySelectorAll('.item-row');
                     rows.forEach(row => {
                         if (!row.querySelector('.col-actions')) {
