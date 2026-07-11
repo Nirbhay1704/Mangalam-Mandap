@@ -245,6 +245,9 @@
             color: var(--text-dark);
             font-weight: bold;
             text-align: center;
+            position: sticky;
+            top: 57px;
+            z-index: 10;
         }
 
         .col-sn {
@@ -455,6 +458,10 @@
         @media print {
             body {
                 background-color: white;
+            }
+
+            th {
+                position: static !important;
             }
 
             .a4-container {
