@@ -1880,6 +1880,7 @@
 
         // Save data to localStorage and Firestore
         function saveData(immediate = false) {
+            if (isResetting) return;
             if (isPageLoading && !immediate) return;
             const villageVal = document.getElementById('village-input').innerText.trim();
             const customerVal = document.getElementById('customer-name-input').innerText.trim();
