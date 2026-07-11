@@ -246,7 +246,7 @@
             font-weight: bold;
             text-align: center;
             position: sticky;
-            top: 57px;
+            top: var(--controls-height, 57px);
             z-index: 10;
         }
 
@@ -1699,6 +1699,9 @@
                     syncBtn.title = 'Offline Mode (Saved on this device only)';
                 }
             }
+            if (typeof adjustStickyHeaderHeight === 'function') {
+                adjustStickyHeaderHeight();
+            }
         }
 
         // Save Firebase Config
@@ -2161,6 +2164,16 @@
             saveData();
         }
 
+        // Helper to adjust the sticky table header offset based on dynamic controls height
+        function adjustStickyHeaderHeight() {
+            const controls = document.querySelector('.controls');
+            if (controls) {
+                const height = controls.offsetHeight;
+                document.documentElement.style.setProperty('--controls-height', `${height}px`);
+            }
+        }
+        window.addEventListener('resize', adjustStickyHeaderHeight);
+
         // Ensure data is saved when exiting or hiding page
         window.addEventListener('beforeunload', () => {
             if (!isResetting) saveData();
@@ -2171,7 +2184,9 @@
 
         // Add event listeners to initial inputs
         document.addEventListener('DOMContentLoaded', () => {
+            adjustStickyHeaderHeight();
             initFirebase();
+            adjustStickyHeaderHeight(); // Recalculate after status badge updates
 
             fetchAndSyncFirestore().then(() => {
                 const loaded = loadData();
