@@ -619,6 +619,58 @@
         .btn-delete:hover {
             background: #bd2130;
         }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast-box {
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .toast-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-box.success {
+            border-left: 4px solid #28a745;
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .toast-box.error {
+            border-left: 4px solid #dc3545;
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
+        .toast-box.info {
+            border-left: 4px solid #17a2b8;
+            background: #e0f7fa;
+            color: #006064;
+        }
     </style>
 </head>
 
@@ -633,7 +685,7 @@
         <button onclick="shareToWhatsApp()" style="margin-left: 10px; background: #25d366;">🟢 શેર (WhatsApp)</button>
         <button onclick="confirmReset()" style="margin-left: 10px; background: #6c757d;">🔄 નવી શીટ</button>
         <button onclick="openModal('saved-sheets-modal')" style="margin-left: 10px; background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">📂 સાચવેલ શીટ્સ</button>
-        <button onclick="openModal('sync-settings-modal')" style="margin-left: 10px; background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">⚙️ સિંક સેટિંગ્સ</button>
+        <button id="sync-settings-btn" onclick="openModal('sync-settings-modal')" style="margin-left: 10px; background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">⚙️ સિંક સેટિંગ્સ</button>
     </div>
 
     <div class="a4-container">
@@ -1501,11 +1553,41 @@
         }
         let isResetting = false;
         let db = null;
+        let syncTimeout = null;
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast-box ${type}`;
+            
+            let emoji = '✅';
+            if (type === 'error') emoji = '❌';
+            if (type === 'info') emoji = 'ℹ️';
+
+            toast.innerHTML = `<span>${emoji}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 50);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // Firebase Initialization helper
         function initFirebase() {
-            const configStr = localStorage.getItem('mangalam_mandap_firebase_config');
+            const configStr = localStorage.getItem('firebaseConfig');
             const statusEl = document.getElementById('db-status-info');
+            const syncBtn = document.getElementById('sync-settings-btn');
             
             if (configStr) {
                 try {
@@ -1532,6 +1614,11 @@
                         if (statusEl) {
                             statusEl.innerHTML = '<span style="color: #28a745;">🟢 ક્લાઉડ ડેટાબેઝ સાથે સફળતાપૂર્વક કનેક્ટેડ છે.</span>';
                         }
+                        if (syncBtn) {
+                            syncBtn.style.background = '#28a745';
+                            syncBtn.innerHTML = '🟢 સિંક ચાલુ';
+                            syncBtn.title = 'Saved & Synced with Global Cloud';
+                        }
                         console.log("Firebase initialized successfully");
                     } else {
                         throw new Error("Invalid config object structure");
@@ -1541,10 +1628,19 @@
                     if (statusEl) {
                         statusEl.innerHTML = '<span style="color: #dc3545;">🔴 કનેક્શન નિષ્ફળ! સાચો કોડ પેસ્ટ કરો.</span>';
                     }
+                    if (syncBtn) {
+                        syncBtn.style.background = '#dc3545';
+                        syncBtn.innerHTML = '🔴 સિંક બંધ (ભૂલ)';
+                    }
                 }
             } else {
                 if (statusEl) {
                     statusEl.innerHTML = '<span style="color: #6c757d;">⚪ લોકલ સ્ટોરેજ મોડ (સિંક કરવા સેટિંગ્સ ખોલો)</span>';
+                }
+                if (syncBtn) {
+                    syncBtn.style.background = '#6c757d';
+                    syncBtn.innerHTML = '⚙️ સિંક સેટિંગ્સ';
+                    syncBtn.title = 'Offline Mode (Saved on this device only)';
                 }
             }
         }
@@ -1552,7 +1648,7 @@
         // Save Firebase Config
         function saveFirebaseConfig() {
             const configVal = document.getElementById('firebase-config-input').value;
-            localStorage.setItem('mangalam_mandap_firebase_config', configVal);
+            localStorage.setItem('firebaseConfig', configVal);
             initFirebase();
             
             if (db) {
@@ -1567,16 +1663,16 @@
                 });
                 
                 Promise.all(promises).then(() => {
-                    alert("ડેટાબેઝ સેટઅપ અને સિંક પૂર્ણ થયું!");
+                    showToast("ડેટાબેઝ સેટઅપ અને સિંક પૂર્ણ થયું!", "success");
                     fetchAndSyncFirestore().then(() => {
                         window.location.reload();
                     });
                 }).catch(err => {
                     console.error("Error batch syncing history to Firestore:", err);
-                    alert("ડેટાબેઝ સેવ થયો પરંતુ જૂનો ડેટા અપલોડ કરવામાં સમસ્યા આવી.");
+                    showToast("ડેટાબેઝ સેવ થયો પરંતુ જૂનો ડેટા અપલોડ કરવામાં સમસ્યા આવી.", "error");
                 });
             } else {
-                alert("કોડ માન્ય નથી. કૃપા કરીને સાચો firebaseConfig કોડ પેસ્ટ કરો.");
+                showToast("કોડ માન્ય નથી. કૃપા કરીને સાચો firebaseConfig કોડ પેસ્ટ કરો.", "error");
             }
         }
 
@@ -1584,7 +1680,7 @@
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
             if (modalId === 'sync-settings-modal') {
-                const config = localStorage.getItem('mangalam_mandap_firebase_config') || '';
+                const config = localStorage.getItem('firebaseConfig') || '';
                 document.getElementById('firebase-config-input').value = config;
                 initFirebase();
             } else if (modalId === 'saved-sheets-modal') {
@@ -1709,11 +1805,20 @@
 
                 localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
 
-                // Save to Firestore Database in background
+                // Save to Firestore Database in background, debounced to prevent quota overflow
                 if (db) {
-                    db.collection('estimates').doc(currentSheetId).set(updatedSheet)
-                    .then(() => console.log("Firestore auto-save success"))
-                    .catch(err => console.error("Firestore auto-save error:", err));
+                    if (syncTimeout) clearTimeout(syncTimeout);
+                    syncTimeout = setTimeout(() => {
+                        db.collection('estimates').doc(currentSheetId).set(updatedSheet)
+                        .then(() => {
+                            console.log("Firestore auto-save success");
+                            showToast("ડેટા ક્લાઉડ પર સિંક થયો!", "success");
+                        })
+                        .catch(err => {
+                            console.error("Firestore auto-save error:", err);
+                            showToast("સિંક નિષ્ફળ!", "error");
+                        });
+                    }, 1500);
                 }
             }
         }
