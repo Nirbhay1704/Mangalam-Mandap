@@ -774,6 +774,7 @@
 
         <div class="controls-group">
             <button onclick="confirmReset()" style="background: #6c757d;">🔄 નવી શીટ</button>
+            <button onclick="clearCurrentSheet()" style="background: #e0a800; color: #212529;">🧹 શીટ સાફ કરો</button>
             <button onclick="openModal('saved-sheets-modal')" style="background: #17a2b8;">📂 સાચવેલ શીટ્સ</button>
         </div>
         <div class="controls-group">
@@ -2426,6 +2427,25 @@
                 if (amtEl) amtEl.innerText = '0';
                 if (unitSel) unitSel.value = 'ચો.ફુટ';
             });
+        }
+
+        function clearCurrentSheet() {
+            if (confirm("શું તમે આ એસ્ટીમેટ શીટનો બધો ડેટા સાફ કરવા માંગો છો? (શીટ નંબર આ જ રહેશે)")) {
+                clearAllInputs();
+                
+                // Clear particulars of item rows
+                document.querySelectorAll('.item-row .col-particular').forEach(el => {
+                    el.innerText = '';
+                });
+                
+                // Clear category titles
+                document.querySelectorAll('.category-row td:first-child').forEach(el => {
+                    el.innerText = '';
+                });
+                
+                calculateTotals();
+                saveData(true);
+            }
         }
 
         // Reset the sheet
