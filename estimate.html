@@ -2667,12 +2667,12 @@
 
             html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
                 restoreAfterExport();
-                controls.style.display = 'block';
+                controls.style.display = '';
                 const imgData = canvas.toDataURL('image/jpeg', 0.9);
                 callback(imgData);
             }).catch(err => {
                 restoreAfterExport();
-                controls.style.display = 'block';
+                controls.style.display = '';
                 console.error(err);
                 alert("Error capturing image");
             });
@@ -2695,7 +2695,7 @@
 
             html2canvas(container, { scale: 2, useCORS: true }).then(async canvas => {
                 restoreAfterExport();
-                controls.style.display = 'block';
+                controls.style.display = '';
 
                 try {
                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -2734,7 +2734,7 @@
                 }
             }).catch(err => {
                 restoreAfterExport();
-                controls.style.display = 'block';
+                controls.style.display = '';
                 console.error(err);
                 alert("Error capturing PDF");
             });
