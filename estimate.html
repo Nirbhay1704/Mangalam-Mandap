@@ -1678,7 +1678,7 @@
                     });
                 }).catch(err => {
                     console.error("Error batch syncing history to Firestore:", err);
-                    showToast("ડેટાબેઝ સેવ થયો પરંતુ જૂનો ડેટા અપલોડ કરવામાં સમસ્યા આવી.", "error");
+                    showToast(`ડેટાબેઝ સેવ થયો પરંતુ જૂનો ડેટા અપલોડ કરવામાં સમસ્યા આવી: ${err.message || err}`, "error");
                 });
             } else {
                 showToast("કોડ માન્ય નથી. કૃપા કરીને સાચો firebaseConfig કોડ પેસ્ટ કરો.", "error");
