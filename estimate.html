@@ -501,6 +501,9 @@
         <button onclick="saveAsImage()" style="margin-left: 10px; background: #17a2b8;">💾 સેવ (Image)</button>
         <button onclick="shareToWhatsApp()" style="margin-left: 10px; background: #25d366;">🟢 શેર (WhatsApp)</button>
         <button onclick="confirmReset()" style="margin-left: 10px; background: #6c757d;">🔄 નવી શીટ</button>
+        <select id="saved-sheets-dropdown" onchange="loadSavedSheet(this.value)" style="margin-left: 10px; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background: white; max-width: 200px; vertical-align: middle;">
+            <option value="">📂 ઇતિહાસ / સાચવેલ શીટ...</option>
+        </select>
     </div>
 
     <div class="a4-container">
@@ -1336,8 +1339,28 @@
             }
         }
 
-        // Save data to localStorage
+        let currentSheetId = localStorage.getItem('mangalam_mandap_current_id') || Date.now().toString();
+        if (!localStorage.getItem('mangalam_mandap_current_id')) {
+            localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
+        }
+
+        // Helper to format date and time
+        function getFormattedDateTime() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${day}-${month}-${year} ${hours}:${minutes}`;
+        }
+
+        // Save data to localStorage (both active draft and history list)
         function saveData() {
+            const villageVal = document.getElementById('village-input').innerText.trim();
+            const customerVal = document.getElementById('customer-name-input').innerText.trim();
+            const mobileVal = document.getElementById('mobile-input').innerText.trim();
+
             const data = {
                 village: document.getElementById('village-input').innerText,
                 eventDate: document.getElementById('event-date-input').innerText,
@@ -1346,6 +1369,10 @@
                 rows: [],
                 terms: []
             };
+
+            // Check if sheet has entered values to avoid saving empty sheets
+            let hasRates = false;
+            let hasQuantities = false;
 
             // Save rows
             const rows = document.querySelectorAll('#quotation-body tr');
@@ -1361,6 +1388,11 @@
                     const daysInput = row.querySelector('.days-input');
                     const rateInput = row.querySelector('.rate-input');
                     const amountDisplay = row.querySelector('.amount-display');
+
+                    const rateVal = rateInput ? parseFloat(rateInput.value) : 0;
+                    const qtyVal = qtyInput ? parseFloat(qtyInput.value) : 0;
+                    if (rateVal > 0) hasRates = true;
+                    if (qtyVal > 0) hasQuantities = true;
 
                     data.rows.push({
                         type: 'item',
@@ -1396,7 +1428,76 @@
                 manual: grandTotalEl ? (grandTotalEl.dataset.manual === "true") : false
             };
 
+            // Save active draft
             localStorage.setItem('mangalam_mandap_estimate', JSON.stringify(data));
+
+            // Save to history list if sheet is not empty
+            const isEmpty = !villageVal && !customerVal && !mobileVal && !hasRates && !hasQuantities;
+            if (!isEmpty) {
+                const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                
+                // Determine sheet name: Village name, or last modification timestamp if empty
+                const sheetName = villageVal || ("શીટ - " + getFormattedDateTime());
+
+                const existingIndex = history.findIndex(item => item.id === currentSheetId);
+                const updatedSheet = {
+                    id: currentSheetId,
+                    name: sheetName,
+                    lastModified: getFormattedDateTime(),
+                    data: data
+                };
+
+                if (existingIndex !== -1) {
+                    history[existingIndex] = updatedSheet;
+                } else {
+                    history.push(updatedSheet);
+                }
+
+                localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
+                updateHistoryDropdown();
+            }
+        }
+
+        // Update history dropdown UI options
+        function updateHistoryDropdown() {
+            const dropdown = document.getElementById('saved-sheets-dropdown');
+            if (!dropdown) return;
+
+            dropdown.innerHTML = '<option value="">📂 ઇતિહાસ / સાચવેલ શીટ...</option>';
+
+            const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+            // Sort: newest first (using float conversion for timestamp values)
+            history.sort((a, b) => parseFloat(b.id) - parseFloat(a.id));
+
+            history.forEach(sheet => {
+                const option = document.createElement('option');
+                option.value = sheet.id;
+                option.textContent = sheet.name;
+                if (sheet.id === currentSheetId) {
+                    option.selected = true;
+                }
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Load selected sheet from history
+        function loadSavedSheet(sheetId) {
+            if (!sheetId) return;
+
+            const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+            const sheet = history.find(s => s.id === sheetId);
+            if (!sheet) return;
+
+            // Save current sheet first
+            saveData();
+
+            // Set new active ID and load data
+            currentSheetId = sheet.id;
+            localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
+            localStorage.setItem('mangalam_mandap_estimate', JSON.stringify(sheet.data));
+
+            // Reload page to automatically render the selected sheet
+            window.location.reload();
         }
 
         // Load data from localStorage
@@ -1481,8 +1582,13 @@
         }
 
         // Reset the sheet
+        // This archives the current sheet to history, generates a new sheet ID, and reloads
         function confirmReset() {
             if (confirm("નવી શીટ શરૂ કરવાથી જૂનો ડેટા સાફ થઈ જશે. શું તમે સહમત છો?")) {
+                saveData();
+
+                currentSheetId = Date.now().toString();
+                localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
                 localStorage.removeItem('mangalam_mandap_estimate');
                 window.location.reload();
             }
@@ -1535,6 +1641,14 @@
             saveData();
         }
 
+        // Ensure data is saved when exiting or hiding page
+        window.addEventListener('beforeunload', () => {
+            saveData();
+        });
+        window.addEventListener('pagehide', () => {
+            saveData();
+        });
+
         // Add event listeners to initial inputs
         document.addEventListener('DOMContentLoaded', () => {
             const loaded = loadData();
@@ -1563,6 +1677,9 @@
             document.addEventListener('change', () => {
                 saveData();
             });
+
+            // Populate the history dropdown on load
+            updateHistoryDropdown();
         });
 
         // Image Export and Sharing logic
