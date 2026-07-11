@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=800">
     <title>Mangalam Mandap</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
@@ -2630,11 +2631,30 @@
         }
 
         async function shareToWhatsApp() {
-            captureImage(async dataUrl => {
+            const container = document.querySelector('.a4-container');
+            const controls = document.querySelector('.controls');
+            controls.style.display = 'none';
+            prepareForExport();
+
+            html2canvas(container, { scale: 2, useCORS: true }).then(async canvas => {
+                restoreAfterExport();
+                controls.style.display = 'block';
+
                 try {
-                    const res = await fetch(dataUrl);
-                    const blob = await res.blob();
-                    const file = new File([blob], 'Quotation.jpg', { type: 'image/jpeg' });
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const { jsPDF } = window.jspdf;
+                    
+                    const pdf = new jsPDF('p', 'pt', 'a4');
+                    const imgWidth = 595.28;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+                    const villageVal = document.getElementById('village-input').innerText.trim();
+                    const filename = villageVal ? `${villageVal}.pdf` : 'Quotation.pdf';
+                    
+                    const blob = pdf.output('blob');
+                    const file = new File([blob], filename, { type: 'application/pdf' });
 
                     if (navigator.share) {
                         await navigator.share({
@@ -2642,12 +2662,21 @@
                             files: [file]
                         });
                     } else {
-                        alert('System Share not supported on this device/browser (Works best on Mobile). Please click Save (Image) instead and attach it in WhatsApp.');
+                        const link = document.createElement('a');
+                        link.download = filename;
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        showToast("પીડીએફ ડાઉનલોડ થઈ ગઈ છે! તમે તેને વોટ્સએપ પર શેર કરી શકો છો.", "success");
                     }
                 } catch (err) {
-                    console.error('Error sharing:', err);
-                    alert('Sharing failed. Please save the image instead.');
+                    console.error('Error sharing PDF:', err);
+                    alert('Sharing failed. Please try again.');
                 }
+            }).catch(err => {
+                restoreAfterExport();
+                controls.style.display = 'block';
+                console.error(err);
+                alert("Error capturing PDF");
             });
         }
     </script>
