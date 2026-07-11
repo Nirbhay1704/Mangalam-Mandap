@@ -787,10 +787,10 @@
 
     <div class="a4-container">
 
-        <!-- Sheet Custom Title Header -->
-        <div style="text-align: center; margin-bottom: 15px;">
-            <div id="sheet-title-input" class="editable" contenteditable="true" style="font-size: 22px; font-weight: bold; color: var(--primary-red); display: inline-block; min-width: 200px; border-bottom: 1px dashed #888888; margin-bottom: 5px;" placeholder="એસ્ટીમેટનું નામ લખો...">નવું એસ્ટીમેટ</div>
-            <div style="font-size: 13px; font-weight: bold; color: #555; letter-spacing: 1px;">|| જય શ્રી સ્વામિનારાયણ ||</div>
+        <!-- Spiritual Header -->
+        <div
+            style="text-align: center; font-weight: bold; font-size: 16px; color: var(--primary-red); margin-bottom: 15px; letter-spacing: 1px;">
+            || જય શ્રી સ્વામિનારાયણ ||
         </div>
 
         <!-- Quotation Details -->
@@ -1825,7 +1825,6 @@
             const mobileVal = document.getElementById('mobile-input').innerText.trim();
 
             const data = {
-                sheetName: document.getElementById('sheet-title-input').innerText.trim() || 'નવું એસ્ટીમેટ',
                 village: document.getElementById('village-input').innerText,
                 eventDate: document.getElementById('event-date-input').innerText,
                 customerName: document.getElementById('customer-name-input').innerText,
@@ -1900,8 +1899,7 @@
                 let history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
                 if (!Array.isArray(history)) history = [];
                 
-                const sheetNameVal = document.getElementById('sheet-title-input').innerText.trim() || 'નવું એસ્ટીમેટ';
-                const sheetName = sheetNameVal;
+                const sheetName = villageVal || ("શીટ - " + getFormattedDateTime());
 
                 const existingIndex = history.findIndex(item => item.id === currentSheetId);
                 const updatedSheet = {
@@ -1963,11 +1961,6 @@
             isSyncingFromRemote = true;
 
             try {
-                const titleEl = document.getElementById('sheet-title-input');
-                if (titleEl && document.activeElement !== titleEl && remoteData.sheetName !== undefined) {
-                    if (titleEl.innerText !== remoteData.sheetName) titleEl.innerText = remoteData.sheetName;
-                }
-
                 const villageEl = document.getElementById('village-input');
                 const dateEl = document.getElementById('event-date-input');
                 const nameEl = document.getElementById('customer-name-input');
@@ -2255,13 +2248,6 @@
                 if (!data) return false;
                 
                 // Populate metadata
-                if (data.sheetName !== undefined) {
-                    document.getElementById('sheet-title-input').innerText = data.sheetName;
-                } else {
-                    const villageVal = data.village || '';
-                    const customerVal = data.customerName || '';
-                    document.getElementById('sheet-title-input').innerText = (villageVal || customerVal) ? `${villageVal} - ${customerVal}` : 'નવું એસ્ટીમેટ';
-                }
                 if (data.village !== undefined) document.getElementById('village-input').innerText = data.village;
                 if (data.eventDate !== undefined) document.getElementById('event-date-input').innerText = data.eventDate;
                 if (data.customerName !== undefined) document.getElementById('customer-name-input').innerText = data.customerName;
@@ -2354,8 +2340,6 @@
             const mobileEl = document.getElementById('mobile-input');
             const grandTotalEl = document.getElementById('grand-total');
 
-            const titleEl = document.getElementById('sheet-title-input');
-            if (titleEl) titleEl.innerText = 'નવું એસ્ટીમેટ';
             if (villageEl) villageEl.innerText = '';
             if (dateEl) dateEl.innerText = '';
             if (nameEl) nameEl.innerText = '';
