@@ -1343,6 +1343,7 @@
         if (!localStorage.getItem('mangalam_mandap_current_id')) {
             localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
         }
+        let isResetting = false;
 
         // Helper to format date and time
         function getFormattedDateTime() {
@@ -1585,6 +1586,7 @@
         // This archives the current sheet to history, generates a new sheet ID, and reloads
         function confirmReset() {
             if (confirm("નવી શીટ શરૂ કરવાથી જૂનો ડેટા સાફ થઈ જશે. શું તમે સહમત છો?")) {
+                isResetting = true;
                 saveData();
 
                 currentSheetId = Date.now().toString();
@@ -1643,10 +1645,10 @@
 
         // Ensure data is saved when exiting or hiding page
         window.addEventListener('beforeunload', () => {
-            saveData();
+            if (!isResetting) saveData();
         });
         window.addEventListener('pagehide', () => {
-            saveData();
+            if (!isResetting) saveData();
         });
 
         // Add event listeners to initial inputs
