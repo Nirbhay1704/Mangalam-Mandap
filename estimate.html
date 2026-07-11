@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=800">
     <title>Mangalam Mandap</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Mukta+Vaani:wght@300;400;500;600;700&display=swap');
 
@@ -488,6 +490,135 @@
                 print-color-adjust: exact;
             }
         }
+
+        /* Modals styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: var(--text-dark);
+        }
+
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-red);
+        }
+
+        .sheets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sheet-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .sheet-card:hover {
+            border-color: var(--primary-red);
+            background: #fffef5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .sheet-card-info {
+            flex: 1;
+            padding-right: 15px;
+            text-align: left;
+        }
+
+        .sheet-card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-red);
+            margin-bottom: 4px;
+        }
+
+        .sheet-card-meta {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .sheet-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-load {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn-load:hover {
+            background: #138496;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn-delete:hover {
+            background: #bd2130;
+        }
     </style>
 </head>
 
@@ -501,9 +632,8 @@
         <button onclick="saveAsImage()" style="margin-left: 10px; background: #17a2b8;">💾 સેવ (Image)</button>
         <button onclick="shareToWhatsApp()" style="margin-left: 10px; background: #25d366;">🟢 શેર (WhatsApp)</button>
         <button onclick="confirmReset()" style="margin-left: 10px; background: #6c757d;">🔄 નવી શીટ</button>
-        <select id="saved-sheets-dropdown" onchange="loadSavedSheet(this.value)" style="margin-left: 10px; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background: white; max-width: 200px; vertical-align: middle;">
-            <option value="">📂 ઇતિહાસ / સાચવેલ શીટ...</option>
-        </select>
+        <button onclick="openModal('saved-sheets-modal')" style="margin-left: 10px; background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">📂 સાચવેલ શીટ્સ</button>
+        <button onclick="openModal('sync-settings-modal')" style="margin-left: 10px; background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;">⚙️ સિંક સેટિંગ્સ</button>
     </div>
 
     <div class="a4-container">
@@ -1226,6 +1356,45 @@
 
     </div>
 
+    <!-- Saved Sheets Modal -->
+    <div id="saved-sheets-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📂 સાચવેલ શીટ્સ (Saved Estimates)</h2>
+                <span class="close-modal" onclick="closeModal('saved-sheets-modal')">&times;</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="sheet-search-input" oninput="filterSavedSheets()" placeholder="ગામ અથવા ગ્રાહકના નામથી શોધો..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+            </div>
+            <div id="saved-sheets-list" class="sheets-list">
+                <!-- Dynamic list cards will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Settings Modal -->
+    <div id="sync-settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ સિંક સેટિંગ્સ (Cloud Sync Settings)</h2>
+                <span class="close-modal" onclick="closeModal('sync-settings-modal')">&times;</span>
+            </div>
+            <div style="font-size: 13px; line-height: 1.6; color: #555; margin-bottom: 15px; text-align: left;">
+                <h3 style="margin-bottom: 5px; color: var(--text-dark);">ક્લાઉડ ડેટાબેઝ સિંકના સ્ટેપ્સ:</h3>
+                <ol style="margin-left: 20px; margin-top: 5px;">
+                    <li><a href="https://console.firebase.google.com/" target="_blank" style="color: var(--primary-red); font-weight: bold; text-decoration: underline;">Firebase Console</a> પર જાઓ.</li>
+                    <li>નવું પ્રોજેક્ટ બનાવો (નામ: <b>Mangalam Mandap</b>).</li>
+                    <li>પ્રોજેક્ટ ડેશબોર્ડમાં <b>Web (</>)</b> આઇકોન પર ક્લિક કરી <b>firebaseConfig</b> કોડ કોપી કરો.</li>
+                    <li>ડાબી બાજુના મેનૂમાંથી <b>Build > Firestore Database</b> બનાવી <b>Start in test mode</b> સિલેક્ટ કરો.</li>
+                    <li>નીચે આપેલા બોક્સમાં કોપી કરેલો કોડ પેસ્ટ કરીને સેવ કરો.</li>
+                </ol>
+            </div>
+            <textarea id="firebase-config-input" placeholder="કોપી કરેલો firebaseConfig કોડ અહિં પેસ્ટ કરો...&#10;&#10;const firebaseConfig = {&#10;  apiKey: '...',&#10;  ...&#10;};" style="width: 100%; height: 180px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 15px; box-sizing: border-box; resize: vertical; outline: none;"></textarea>
+            <button onclick="saveFirebaseConfig()" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px;">💾 સેવ અને કનેક્ટ કરો</button>
+            <div id="db-status-info" style="margin-top: 15px; text-align: center; font-weight: bold; font-size: 14px;"></div>
+        </div>
+    </div>
+
     <!-- JavaScript to auto-calculate totals -->
     <script>
         function formatNumber(num) {
@@ -1324,19 +1493,6 @@
                     }
                 });
             }
-
-            if (amountDisplay) {
-                amountDisplay.addEventListener('input', () => {
-                    amountDisplay.dataset.manual = "true";
-                    calculateTotals();
-                });
-                amountDisplay.addEventListener('blur', () => {
-                    if (amountDisplay.dataset.manual === "true") {
-                        let val = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
-                        amountDisplay.innerText = formatNumber(val);
-                    }
-                });
-            }
         }
 
         let currentSheetId = localStorage.getItem('mangalam_mandap_current_id') || Date.now().toString();
@@ -1344,6 +1500,104 @@
             localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
         }
         let isResetting = false;
+        let db = null;
+
+        // Firebase Initialization helper
+        function initFirebase() {
+            const configStr = localStorage.getItem('mangalam_mandap_firebase_config');
+            const statusEl = document.getElementById('db-status-info');
+            
+            if (configStr) {
+                try {
+                    let cleanConfigStr = configStr.trim();
+                    if (cleanConfigStr.includes('{') && cleanConfigStr.includes('}')) {
+                        const start = cleanConfigStr.indexOf('{');
+                        const end = cleanConfigStr.lastIndexOf('}');
+                        cleanConfigStr = cleanConfigStr.substring(start, end + 1);
+                    }
+                    
+                    let configObj;
+                    try {
+                        configObj = JSON.parse(cleanConfigStr);
+                    } catch (e) {
+                        configObj = new Function(`return ${cleanConfigStr};`)();
+                    }
+
+                    if (configObj && configObj.projectId) {
+                        if (firebase.apps.length === 0) {
+                            firebase.initializeApp(configObj);
+                        }
+                        db = firebase.firestore();
+                        
+                        if (statusEl) {
+                            statusEl.innerHTML = '<span style="color: #28a745;">🟢 ક્લાઉડ ડેટાબેઝ સાથે સફળતાપૂર્વક કનેક્ટેડ છે.</span>';
+                        }
+                        console.log("Firebase initialized successfully");
+                    } else {
+                        throw new Error("Invalid config object structure");
+                    }
+                } catch (err) {
+                    console.error("Firebase init error:", err);
+                    if (statusEl) {
+                        statusEl.innerHTML = '<span style="color: #dc3545;">🔴 કનેક્શન નિષ્ફળ! સાચો કોડ પેસ્ટ કરો.</span>';
+                    }
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.innerHTML = '<span style="color: #6c757d;">⚪ લોકલ સ્ટોરેજ મોડ (સિંક કરવા સેટિંગ્સ ખોલો)</span>';
+                }
+            }
+        }
+
+        // Save Firebase Config
+        function saveFirebaseConfig() {
+            const configVal = document.getElementById('firebase-config-input').value;
+            localStorage.setItem('mangalam_mandap_firebase_config', configVal);
+            initFirebase();
+            
+            if (db) {
+                const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                const promises = history.map(sheet => {
+                    return db.collection('estimates').doc(sheet.id).set({
+                        id: sheet.id,
+                        name: sheet.name,
+                        lastModified: sheet.lastModified,
+                        data: sheet.data
+                    });
+                });
+                
+                Promise.all(promises).then(() => {
+                    alert("ડેટાબેઝ સેટઅપ અને સિંક પૂર્ણ થયું!");
+                    fetchAndSyncFirestore().then(() => {
+                        window.location.reload();
+                    });
+                }).catch(err => {
+                    console.error("Error batch syncing history to Firestore:", err);
+                    alert("ડેટાબેઝ સેવ થયો પરંતુ જૂનો ડેટા અપલોડ કરવામાં સમસ્યા આવી.");
+                });
+            } else {
+                alert("કોડ માન્ય નથી. કૃપા કરીને સાચો firebaseConfig કોડ પેસ્ટ કરો.");
+            }
+        }
+
+        // Modals management
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            if (modalId === 'sync-settings-modal') {
+                const config = localStorage.getItem('mangalam_mandap_firebase_config') || '';
+                document.getElementById('firebase-config-input').value = config;
+                initFirebase();
+            } else if (modalId === 'saved-sheets-modal') {
+                document.getElementById('sheet-search-input').value = '';
+                fetchAndSyncFirestore().then(() => {
+                    updateSavedSheetsList();
+                });
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
 
         // Helper to format date and time
         function getFormattedDateTime() {
@@ -1356,7 +1610,7 @@
             return `${day}-${month}-${year} ${hours}:${minutes}`;
         }
 
-        // Save data to localStorage (both active draft and history list)
+        // Save data to localStorage and Firestore
         function saveData() {
             const villageVal = document.getElementById('village-input').innerText.trim();
             const customerVal = document.getElementById('customer-name-input').innerText.trim();
@@ -1371,7 +1625,6 @@
                 terms: []
             };
 
-            // Check if sheet has entered values to avoid saving empty sheets
             let hasRates = false;
             let hasQuantities = false;
 
@@ -1429,15 +1682,15 @@
                 manual: grandTotalEl ? (grandTotalEl.dataset.manual === "true") : false
             };
 
-            // Save active draft
+            // Save active draft locally
             localStorage.setItem('mangalam_mandap_estimate', JSON.stringify(data));
 
             // Save to history list if sheet is not empty
             const isEmpty = !villageVal && !customerVal && !mobileVal && !hasRates && !hasQuantities;
             if (!isEmpty) {
-                const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                let history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                if (!Array.isArray(history)) history = [];
                 
-                // Determine sheet name: Village name, or last modification timestamp if empty
                 const sheetName = villageVal || ("શીટ - " + getFormattedDateTime());
 
                 const existingIndex = history.findIndex(item => item.id === currentSheetId);
@@ -1455,30 +1708,136 @@
                 }
 
                 localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
-                updateHistoryDropdown();
+
+                // Save to Firestore Database in background
+                if (db) {
+                    db.collection('estimates').doc(currentSheetId).set(updatedSheet)
+                    .then(() => console.log("Firestore auto-save success"))
+                    .catch(err => console.error("Firestore auto-save error:", err));
+                }
             }
         }
 
-        // Update history dropdown UI options
-        function updateHistoryDropdown() {
-            const dropdown = document.getElementById('saved-sheets-dropdown');
-            if (!dropdown) return;
+        // Fetch all sheets from Firestore and sync with local history list
+        function fetchAndSyncFirestore() {
+            if (!db) return Promise.resolve();
+            return db.collection('estimates').get().then(snapshot => {
+                const history = [];
+                snapshot.forEach(doc => {
+                    history.push(doc.data());
+                });
+                localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
+            }).catch(err => {
+                console.error("Firestore sync error:", err);
+            });
+        }
 
-            dropdown.innerHTML = '<option value="">📂 ઇતિહાસ / સાચવેલ શીટ...</option>';
+        // Update list of saved sheets inside Saved Sheets Modal
+        function updateSavedSheetsList(filteredHistory = null) {
+            const listContainer = document.getElementById('saved-sheets-list');
+            if (!listContainer) return;
 
-            const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
-            // Sort: newest first (using float conversion for timestamp values)
+            let history = filteredHistory;
+            if (!history) {
+                history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+            }
+            if (!Array.isArray(history)) history = [];
+
+            // Sort: newest first
             history.sort((a, b) => parseFloat(b.id) - parseFloat(a.id));
 
+            if (history.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">કોઈ સાચવેલ શીટ મળી નથી.</div>';
+                return;
+            }
+
+            listContainer.innerHTML = '';
             history.forEach(sheet => {
-                const option = document.createElement('option');
-                option.value = sheet.id;
-                option.textContent = sheet.name;
+                const card = document.createElement('div');
+                card.className = 'sheet-card';
                 if (sheet.id === currentSheetId) {
-                    option.selected = true;
+                    card.style.borderLeft = '4px solid var(--primary-yellow)';
                 }
-                dropdown.appendChild(option);
+
+                const customer = sheet.data && sheet.data.customerName ? sheet.data.customerName.trim() : '';
+                const mobile = sheet.data && sheet.data.mobile ? sheet.data.mobile.trim() : '';
+                const total = sheet.data && sheet.data.grandTotal ? sheet.data.grandTotal.value : '0.00';
+
+                card.innerHTML = `
+                    <div class="sheet-card-info">
+                        <div class="sheet-card-title">${sheet.name} ${sheet.id === currentSheetId ? '<span style="font-size: 11px; background: var(--primary-yellow); padding: 1px 5px; border-radius: 10px; color: var(--text-dark); margin-left: 8px;">એક્ટિવ</span>' : ''}</div>
+                        <div class="sheet-card-meta">
+                            ${customer ? `<b>ગ્રાહક:</b> ${customer} | ` : ''}
+                            ${mobile ? `<b>મોબાઈલ:</b> ${mobile} <br>` : ''}
+                            <b>કુલ રકમ:</b> ₹${total} | <b>અપડેટ સમય:</b> ${sheet.lastModified}
+                        </div>
+                    </div>
+                    <div class="sheet-card-actions">
+                        <button class="btn-load" onclick="loadSavedSheet('${sheet.id}')">📂 ખોલો</button>
+                        <button class="btn-delete" onclick="deleteSavedSheet('${sheet.id}')">🗑️ ડીલીટ</button>
+                    </div>
+                `;
+                listContainer.appendChild(card);
             });
+        }
+
+        // Filter saved sheets based on search input
+        function filterSavedSheets() {
+            const query = document.getElementById('sheet-search-input').value.toLowerCase().trim();
+            const history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+            if (!Array.isArray(history)) return;
+
+            if (!query) {
+                updateSavedSheetsList(history);
+                return;
+            }
+
+            const filtered = history.filter(sheet => {
+                const titleMatch = sheet.name.toLowerCase().includes(query);
+                const villageMatch = (sheet.data && sheet.data.village && sheet.data.village.toLowerCase().includes(query));
+                const customerMatch = (sheet.data && sheet.data.customerName && sheet.data.customerName.toLowerCase().includes(query));
+                const mobileMatch = (sheet.data && sheet.data.mobile && sheet.data.mobile.includes(query));
+                return titleMatch || villageMatch || customerMatch || mobileMatch;
+            });
+
+            updateSavedSheetsList(filtered);
+        }
+
+        // Delete Saved Sheet from Local and Firestore
+        function deleteSavedSheet(sheetId) {
+            if (confirm("શું તમે ખરેખર આ શીટ ડીલીટ કરવા માંગો છો?")) {
+                let history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                history = history.filter(s => s.id !== sheetId);
+                localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
+
+                const isDeletingActive = (sheetId === currentSheetId);
+                if (isDeletingActive) {
+                    localStorage.removeItem('mangalam_mandap_estimate');
+                    currentSheetId = Date.now().toString();
+                    localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
+                }
+
+                if (db) {
+                    db.collection('estimates').doc(sheetId).delete().then(() => {
+                        console.log("Deleted from Firestore");
+                        fetchAndSyncFirestore().then(() => {
+                            if (isDeletingActive) {
+                                window.location.reload();
+                            } else {
+                                updateSavedSheetsList();
+                            }
+                        });
+                    }).catch(err => {
+                        console.error("Error deleting from Firestore:", err);
+                    });
+                } else {
+                    if (isDeletingActive) {
+                        window.location.reload();
+                    } else {
+                        updateSavedSheetsList();
+                    }
+                }
+            }
         }
 
         // Load selected sheet from history
@@ -1489,18 +1848,12 @@
             const sheet = history.find(s => s.id === sheetId);
             if (!sheet) return;
 
-            // Set flag to prevent page unload listener from overwriting the loaded sheet data
             isResetting = true;
-
-            // Save current sheet first
             saveData();
 
-            // Set new active ID and load data
             currentSheetId = sheet.id;
             localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
             localStorage.setItem('mangalam_mandap_estimate', JSON.stringify(sheet.data));
-
-            // Reload page to automatically render the selected sheet
             window.location.reload();
         }
 
@@ -1511,6 +1864,7 @@
 
             try {
                 const data = JSON.parse(saved);
+                if (!data) return false;
                 
                 // Populate metadata
                 if (data.village !== undefined) document.getElementById('village-input').innerText = data.village;
@@ -1656,24 +2010,28 @@
 
         // Add event listeners to initial inputs
         document.addEventListener('DOMContentLoaded', () => {
-            const loaded = loadData();
-            
-            const rows = document.querySelectorAll('.item-row');
-            rows.forEach(r => bindInputs(r));
+            initFirebase();
 
-            const grandTotalEl = document.getElementById('grand-total');
-            if (grandTotalEl) {
-                grandTotalEl.addEventListener('input', () => {
-                    grandTotalEl.dataset.manual = "true";
-                });
-                grandTotalEl.addEventListener('blur', () => {
-                    const val = parseFloat(grandTotalEl.innerText.replace(/[^\d.-]/g, '')) || 0;
-                    grandTotalEl.innerText = formatNumber(val);
-                    saveData();
-                });
-            }
+            fetchAndSyncFirestore().then(() => {
+                const loaded = loadData();
+                
+                const rows = document.querySelectorAll('.item-row');
+                rows.forEach(r => bindInputs(r));
 
-            calculateTotals();
+                const grandTotalEl = document.getElementById('grand-total');
+                if (grandTotalEl) {
+                    grandTotalEl.addEventListener('input', () => {
+                        grandTotalEl.dataset.manual = "true";
+                    });
+                    grandTotalEl.addEventListener('blur', () => {
+                        const val = parseFloat(grandTotalEl.innerText.replace(/[^\d.-]/g, '')) || 0;
+                        grandTotalEl.innerText = formatNumber(val);
+                        saveData();
+                    });
+                }
+
+                calculateTotals();
+            });
 
             // Set up auto-save listeners on input and change
             document.addEventListener('input', () => {
@@ -1682,9 +2040,6 @@
             document.addEventListener('change', () => {
                 saveData();
             });
-
-            // Populate the history dropdown on load
-            updateHistoryDropdown();
         });
 
         // Image Export and Sharing logic
