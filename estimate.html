@@ -1489,6 +1489,9 @@
             const sheet = history.find(s => s.id === sheetId);
             if (!sheet) return;
 
+            // Set flag to prevent page unload listener from overwriting the loaded sheet data
+            isResetting = true;
+
             // Save current sheet first
             saveData();
 
