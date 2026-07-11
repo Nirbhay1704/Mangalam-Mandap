@@ -2644,9 +2644,12 @@
                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
                     const { jsPDF } = window.jspdf;
                     
-                    const pdf = new jsPDF('p', 'pt', 'a4');
                     const imgWidth = 595.28;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // Set PDF page height dynamically to fit the entire table on a single page
+                    const pdfHeight = Math.max(841.89, imgHeight);
+                    const pdf = new jsPDF('p', 'pt', [595.28, pdfHeight]);
                     
                     pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
 
