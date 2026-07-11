@@ -2536,8 +2536,11 @@
                     <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
                 </td>
             `;
-            const totalRow = document.getElementById('total-row');
-            tbody.insertBefore(newRow, totalRow);
+            if (tbody.firstElementChild) {
+                tbody.insertBefore(newRow, tbody.firstElementChild);
+            } else {
+                tbody.appendChild(newRow);
+            }
             saveData();
         }
 
