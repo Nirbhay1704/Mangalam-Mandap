@@ -2459,10 +2459,8 @@
                 
                 currentSheetId = Date.now().toString();
                 localStorage.setItem('mangalam_mandap_current_id', currentSheetId);
+                // Clean local estimate draft to force loading fresh pre-filled template rows
                 localStorage.removeItem('mangalam_mandap_estimate');
-                
-                // Save empty state to remote DB under new ID immediately
-                saveData(true);
                 
                 window.location.reload();
             }
