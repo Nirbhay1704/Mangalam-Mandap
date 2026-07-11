@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=800">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mangalam Mandap</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -471,6 +471,43 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
+        .table-wrapper {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        @media screen and (max-width: 800px) {
+            .a4-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                box-shadow: none !important;
+                box-sizing: border-box !important;
+            }
+            .venue-date {
+                flex-direction: column !important;
+            }
+            .venue-date .venue {
+                border-right: none !important;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .quote-meta {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px;
+            }
+            .corner-shape {
+                display: none !important;
+            }
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .table-wrapper.exporting {
+                overflow-x: visible !important;
+            }
+        }
+
         @media print {
             body {
                 background-color: white;
@@ -814,7 +851,8 @@
         </div>
 
         <!-- Items Table -->
-        <table>
+        <div class="table-wrapper">
+            <table>
             <thead>
                 <tr>
                     <th class="col-sn">ક્રમ</th>
@@ -1535,6 +1573,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <!-- Terms and Conditions -->
         <div class="terms-section">
@@ -1668,6 +1707,9 @@
             const totalSpanner = document.querySelector('#total-row td:first-child');
             if (totalSpanner) totalSpanner.setAttribute('colspan', '6');
             document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '8'));
+            
+            const wrapper = document.querySelector('.table-wrapper');
+            if (wrapper) wrapper.classList.add('exporting');
         }
 
         function restoreAfterExport() {
@@ -1675,6 +1717,9 @@
             const totalSpanner = document.querySelector('#total-row td:first-child');
             if (totalSpanner) totalSpanner.setAttribute('colspan', '8');
             document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '10'));
+            
+            const wrapper = document.querySelector('.table-wrapper');
+            if (wrapper) wrapper.classList.remove('exporting');
         }
 
         // Function to bind event listeners securely
