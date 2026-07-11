@@ -1591,18 +1591,27 @@
             
             if (configStr) {
                 try {
-                    let cleanConfigStr = configStr.trim();
-                    if (cleanConfigStr.includes('{') && cleanConfigStr.includes('}')) {
-                        const start = cleanConfigStr.indexOf('{');
-                        const end = cleanConfigStr.lastIndexOf('}');
-                        cleanConfigStr = cleanConfigStr.substring(start, end + 1);
-                    }
-                    
-                    let configObj;
+                    let clean = configStr.trim();
+                    let configObj = null;
+
+                    // Try direct JSON parse first
                     try {
-                        configObj = JSON.parse(cleanConfigStr);
-                    } catch (e) {
-                        configObj = new Function(`return ${cleanConfigStr};`)();
+                        configObj = JSON.parse(clean);
+                    } catch (e) {}
+
+                    // Try parsing object literal safely if JSON parse fails
+                    if (!configObj) {
+                        const start = clean.indexOf('{');
+                        const end = clean.lastIndexOf('}');
+                        if (start !== -1 && end !== -1 && end > start) {
+                            const objStr = clean.substring(start, end + 1);
+                            try {
+                                // Wrap in parentheses to force JavaScript to evaluate it as an object literal expression
+                                configObj = new Function(`return (${objStr});`)();
+                            } catch (e) {
+                                console.error("Function config evaluation failed:", e);
+                            }
+                        }
                     }
 
                     if (configObj && configObj.projectId) {
