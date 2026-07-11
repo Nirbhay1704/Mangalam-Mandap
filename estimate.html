@@ -500,6 +500,7 @@
         <button onclick="window.print()" style="margin-left: 10px;">🖨️ પ્રિન્ટ</button>
         <button onclick="saveAsImage()" style="margin-left: 10px; background: #17a2b8;">💾 સેવ (Image)</button>
         <button onclick="shareToWhatsApp()" style="margin-left: 10px; background: #25d366;">🟢 શેર (WhatsApp)</button>
+        <button onclick="confirmReset()" style="margin-left: 10px; background: #6c757d;">🔄 નવી શીટ</button>
     </div>
 
     <div class="a4-container">
@@ -512,19 +513,19 @@
 
         <!-- Quotation Details -->
         <div class="venue-date">
-            <div class="venue">ગામ - <span class="editable" contenteditable="true" style="min-width: 150px;"></span>
+            <div class="venue">ગામ - <span id="village-input" class="editable" contenteditable="true" style="min-width: 150px;"></span>
             </div>
-            <div class="date">પ્રસંગની તારીખ - <span class="editable" contenteditable="true"
+            <div class="date">પ્રસંગની તારીખ - <span id="event-date-input" class="editable" contenteditable="true"
                     style="min-width: 150px;"></span></div>
         </div>
 
         <div class="quote-meta" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                ગ્રાહકનું નામ - <span class="editable" contenteditable="true"
+                ગ્રાહકનું નામ - <span id="customer-name-input" class="editable" contenteditable="true"
                     style="min-width: 200px; border-bottom: 1px dotted #ccc;"></span>
             </div>
             <div>
-                મોબાઈલ નંબર - <span class="editable" contenteditable="true"
+                મોબાઈલ નંબર - <span id="mobile-input" class="editable" contenteditable="true"
                     style="min-width: 150px; border-bottom: 1px dotted #ccc;"></span>
             </div>
         </div>
@@ -1335,6 +1336,158 @@
             }
         }
 
+        // Save data to localStorage
+        function saveData() {
+            const data = {
+                village: document.getElementById('village-input').innerText,
+                eventDate: document.getElementById('event-date-input').innerText,
+                customerName: document.getElementById('customer-name-input').innerText,
+                mobile: document.getElementById('mobile-input').innerText,
+                rows: [],
+                terms: []
+            };
+
+            // Save rows
+            const rows = document.querySelectorAll('#quotation-body tr');
+            rows.forEach(row => {
+                if (row.classList.contains('item-row')) {
+                    const snInput = row.querySelector('.sn-input');
+                    const particularEl = row.querySelector('.col-particular');
+                    const unitSelect = row.querySelector('.unit-select');
+                    const wInput = row.querySelector('.w-input');
+                    const lInput = row.querySelector('.l-input');
+                    const hInput = row.querySelector('.h-input');
+                    const qtyInput = row.querySelector('.qty-input');
+                    const daysInput = row.querySelector('.days-input');
+                    const rateInput = row.querySelector('.rate-input');
+                    const amountDisplay = row.querySelector('.amount-display');
+
+                    data.rows.push({
+                        type: 'item',
+                        sn: snInput ? snInput.value : '',
+                        particular: particularEl ? particularEl.innerText : '',
+                        unit: unitSelect ? unitSelect.value : '',
+                        width: wInput ? wInput.value : '',
+                        length: lInput ? lInput.value : '',
+                        height: hInput ? hInput.value : '',
+                        qty: qtyInput ? qtyInput.value : '',
+                        days: daysInput ? daysInput.value : '',
+                        rate: rateInput ? rateInput.value : '',
+                        amount: amountDisplay ? amountDisplay.innerText : '0',
+                        manual: amountDisplay ? (amountDisplay.dataset.manual === "true") : false
+                    });
+                } else if (row.classList.contains('category-row')) {
+                    const catEl = row.querySelector('td');
+                    data.rows.push({
+                        type: 'category',
+                        name: catEl ? catEl.innerText : ''
+                    });
+                }
+            });
+
+            // Save terms
+            document.querySelectorAll('.terms-section .term-text').forEach(el => {
+                data.terms.push(el.innerText);
+            });
+
+            const grandTotalEl = document.getElementById('grand-total');
+            data.grandTotal = {
+                value: grandTotalEl ? grandTotalEl.innerText : '0.00',
+                manual: grandTotalEl ? (grandTotalEl.dataset.manual === "true") : false
+            };
+
+            localStorage.setItem('mangalam_mandap_estimate', JSON.stringify(data));
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('mangalam_mandap_estimate');
+            if (!saved) return false;
+
+            try {
+                const data = JSON.parse(saved);
+                
+                // Populate metadata
+                if (data.village !== undefined) document.getElementById('village-input').innerText = data.village;
+                if (data.eventDate !== undefined) document.getElementById('event-date-input').innerText = data.eventDate;
+                if (data.customerName !== undefined) document.getElementById('customer-name-input').innerText = data.customerName;
+                if (data.mobile !== undefined) document.getElementById('mobile-input').innerText = data.mobile;
+
+                // Recreate rows
+                if (data.rows && data.rows.length > 0) {
+                    const tbody = document.getElementById('quotation-body');
+                    const totalRow = document.getElementById('total-row');
+
+                    // Clear all rows before totalRow
+                    const existingItemRows = tbody.querySelectorAll('.item-row, .category-row');
+                    existingItemRows.forEach(row => row.remove());
+
+                    data.rows.forEach(rowData => {
+                        if (rowData.type === 'category') {
+                            const newRow = document.createElement('tr');
+                            newRow.className = 'category-row';
+                            newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">${rowData.name}</td>`;
+                            tbody.insertBefore(newRow, totalRow);
+                        } else if (rowData.type === 'item') {
+                            const newRow = document.createElement('tr');
+                            newRow.className = 'item-row';
+                            newRow.innerHTML = `
+                                <td class="col-sn"><input type="number" class="sn-input" value="${rowData.sn}"></td>
+                                <td class="col-particular editable" contenteditable="true">${rowData.particular}</td>
+                                <td class="col-unit">
+                                    <select class="unit-select">
+                                        <option value="ચો.ફુટ" ${rowData.unit === "ચો.ફુટ" ? "selected" : ""}>ચો.ફુટ</option>
+                                        <option value="સેટ" ${rowData.unit === "સેટ" ? "selected" : ""}>સેટ</option>
+                                        <option value="નંગ" ${rowData.unit === "નંગ" ? "selected" : ""}>નંગ</option>
+                                        <option value="રનિંગ ફુટ" ${rowData.unit === "રનિંગ ફુટ" ? "selected" : ""}>રનિંગ ફુટ</option>
+                                    </select>
+                                </td>
+                                <td class="col-width"><input type="number" class="w-input" value="${rowData.width}" step="any"></td>
+                                <td class="col-length"><input type="number" class="l-input" value="${rowData.length}" step="any"></td>
+                                <td class="col-height"><input type="number" class="h-input" value="${rowData.height}" step="any"></td>
+                                <td class="col-qty"><input type="number" class="qty-input" value="${rowData.qty}" step="any"></td>
+                                <td class="col-days"><input type="number" class="days-input" value="${rowData.days}" step="any" placeholder="1"></td>
+                                <td class="col-rate"><input type="number" class="rate-input" value="${rowData.rate}" step="any"></td>
+                                <td class="col-amount amount-display editable" contenteditable="true" data-manual="${rowData.manual}">${rowData.amount}</td>
+                            `;
+                            tbody.insertBefore(newRow, totalRow);
+                        }
+                    });
+                }
+
+                // Populate terms
+                if (data.terms && data.terms.length > 0) {
+                    const termTexts = document.querySelectorAll('.terms-section .term-text');
+                    termTexts.forEach((el, index) => {
+                        if (data.terms[index] !== undefined) {
+                            el.innerText = data.terms[index];
+                        }
+                    });
+                }
+
+                // Populate grand total manual state
+                if (data.grandTotal) {
+                    const grandTotalEl = document.getElementById('grand-total');
+                    if (grandTotalEl) {
+                        grandTotalEl.dataset.manual = data.grandTotal.manual ? "true" : "false";
+                        grandTotalEl.innerText = data.grandTotal.value;
+                    }
+                }
+                return true;
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+                return false;
+            }
+        }
+
+        // Reset the sheet
+        function confirmReset() {
+            if (confirm("નવી શીટ શરૂ કરવાથી જૂનો ડેટા સાફ થઈ જશે. શું તમે સહમત છો?")) {
+                localStorage.removeItem('mangalam_mandap_estimate');
+                window.location.reload();
+            }
+        }
+
         // Add Category Row
         function addCategoryRow() {
             const tbody = document.getElementById('quotation-body');
@@ -1343,6 +1496,7 @@
             newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>`;
             const totalRow = document.getElementById('total-row');
             tbody.insertBefore(newRow, totalRow);
+            saveData();
         }
 
         // Add Item Row
@@ -1378,10 +1532,13 @@
             tbody.insertBefore(newRow, totalRow);
             bindInputs(newRow);
             calculateTotals();
+            saveData();
         }
 
         // Add event listeners to initial inputs
         document.addEventListener('DOMContentLoaded', () => {
+            const loaded = loadData();
+            
             const rows = document.querySelectorAll('.item-row');
             rows.forEach(r => bindInputs(r));
 
@@ -1393,10 +1550,19 @@
                 grandTotalEl.addEventListener('blur', () => {
                     const val = parseFloat(grandTotalEl.innerText.replace(/[^\d.-]/g, '')) || 0;
                     grandTotalEl.innerText = formatNumber(val);
+                    saveData();
                 });
             }
 
             calculateTotals();
+
+            // Set up auto-save listeners on input and change
+            document.addEventListener('input', () => {
+                saveData();
+            });
+            document.addEventListener('change', () => {
+                saveData();
+            });
         });
 
         // Image Export and Sharing logic
