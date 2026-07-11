@@ -1641,6 +1641,8 @@
         let isResetting = false;
         let db = null;
         let syncTimeout = null;
+        let isSyncingFromRemote = false;
+        let activeListener = null;
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -1806,7 +1808,7 @@
         }
 
         // Save data to localStorage and Firestore
-        function saveData() {
+        function saveData(immediate = false) {
             const villageVal = document.getElementById('village-input').innerText.trim();
             const customerVal = document.getElementById('customer-name-input').innerText.trim();
             const mobileVal = document.getElementById('mobile-input').innerText.trim();
@@ -1904,10 +1906,10 @@
 
                 localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
 
-                // Save to Firestore Database in background, debounced to prevent quota overflow
+                // Save to Firestore Database in background
                 if (db) {
                     if (syncTimeout) clearTimeout(syncTimeout);
-                    syncTimeout = setTimeout(() => {
+                    const performSync = () => {
                         db.collection('estimates').doc(currentSheetId).set(updatedSheet)
                         .then(() => {
                             console.log("Firestore auto-save success");
@@ -1917,7 +1919,13 @@
                             console.error("Firestore auto-save error:", err);
                             showToast("સિંક નિષ્ફળ!", "error");
                         });
-                    }, 1500);
+                    };
+
+                    if (immediate) {
+                        performSync();
+                    } else {
+                        syncTimeout = setTimeout(performSync, 600); // 600ms debounce for typing responsiveness
+                    }
                 }
             }
         }
@@ -1933,6 +1941,164 @@
                 localStorage.setItem('mangalam_mandap_history', JSON.stringify(history));
             }).catch(err => {
                 console.error("Firestore sync error:", err);
+            });
+        }
+
+        // Apply real-time updates from Firestore to the DOM
+        function applyRemoteUpdate(remoteData) {
+            if (isSyncingFromRemote) return;
+            isSyncingFromRemote = true;
+
+            try {
+                const villageEl = document.getElementById('village-input');
+                const dateEl = document.getElementById('event-date-input');
+                const nameEl = document.getElementById('customer-name-input');
+                const mobileEl = document.getElementById('mobile-input');
+
+                if (villageEl && document.activeElement !== villageEl && remoteData.village !== undefined) {
+                    if (villageEl.innerText !== remoteData.village) villageEl.innerText = remoteData.village;
+                }
+                if (dateEl && document.activeElement !== dateEl && remoteData.eventDate !== undefined) {
+                    if (dateEl.innerText !== remoteData.eventDate) dateEl.innerText = remoteData.eventDate;
+                }
+                if (nameEl && document.activeElement !== nameEl && remoteData.customerName !== undefined) {
+                    if (nameEl.innerText !== remoteData.customerName) nameEl.innerText = remoteData.customerName;
+                }
+                if (mobileEl && document.activeElement !== mobileEl && remoteData.mobile !== undefined) {
+                    if (mobileEl.innerText !== remoteData.mobile) mobileEl.innerText = remoteData.mobile;
+                }
+
+                if (remoteData.rows && Array.isArray(remoteData.rows)) {
+                    const tbody = document.getElementById('quotation-body');
+                    const totalRow = document.getElementById('total-row');
+                    
+                    let currentRows = Array.from(tbody.querySelectorAll('.item-row, .category-row'));
+                    
+                    while (currentRows.length < remoteData.rows.length) {
+                        const newRow = document.createElement('tr');
+                        tbody.insertBefore(newRow, totalRow);
+                        currentRows.push(newRow);
+                    }
+                    while (currentRows.length > remoteData.rows.length) {
+                        const removed = currentRows.pop();
+                        removed.remove();
+                    }
+
+                    remoteData.rows.forEach((rowData, index) => {
+                        const row = currentRows[index];
+                        
+                        if (rowData.type === 'category') {
+                            if (!row.classList.contains('category-row')) {
+                                row.className = 'category-row';
+                                row.innerHTML = `
+                                    <td colspan="10" class="editable" contenteditable="true"></td>
+                                    <td class="col-actions print-hidden">
+                                        <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                                        <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                                        <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                                    </td>
+                                `;
+                            }
+                            const cell = row.querySelector('td:first-child');
+                            if (cell && document.activeElement !== cell && cell.innerText !== rowData.name) {
+                                cell.innerText = rowData.name;
+                            }
+                        } else {
+                            if (!row.classList.contains('item-row')) {
+                                row.className = 'item-row';
+                                row.innerHTML = `
+                                    <td class="col-sn"><input type="number" class="sn-input" value="${rowData.sn || ''}"></td>
+                                    <td class="col-particular editable" contenteditable="true">${rowData.particular || ''}</td>
+                                    <td class="col-unit">
+                                        <select class="unit-select">
+                                            <option value="ચો.ફુટ">ચો.ફુટ</option>
+                                            <option value="સેટ">સેટ</option>
+                                            <option value="નંગ">નંગ</option>
+                                            <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
+                                        </select>
+                                    </td>
+                                    <td class="col-width"><input type="number" class="w-input" value="${rowData.width || ''}" step="any"></td>
+                                    <td class="col-length"><input type="number" class="l-input" value="${rowData.length || ''}" step="any"></td>
+                                    <td class="col-height"><input type="number" class="h-input" value="${rowData.height || ''}" step="any"></td>
+                                    <td class="col-qty"><input type="number" class="qty-input" value="${rowData.qty || ''}" step="any"></td>
+                                    <td class="col-days"><input type="number" class="days-input" value="${rowData.days || ''}" step="any" placeholder="1"></td>
+                                    <td class="col-rate"><input type="number" class="rate-input" value="${rowData.rate || ''}" step="any"></td>
+                                    <td class="col-amount amount-display editable" contenteditable="true" data-manual="${rowData.manual || 'false'}">${rowData.amount || '0'}</td>
+                                    <td class="col-actions print-hidden">
+                                        <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                                        <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                                        <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                                    </td>
+                                `;
+                                bindInputs(row);
+                            } else {
+                                const snIn = row.querySelector('.sn-input');
+                                const partEl = row.querySelector('.col-particular');
+                                const unitSel = row.querySelector('.unit-select');
+                                const wIn = row.querySelector('.w-input');
+                                const lIn = row.querySelector('.l-input');
+                                const hIn = row.querySelector('.h-input');
+                                const qtyIn = row.querySelector('.qty-input');
+                                const daysIn = row.querySelector('.days-input');
+                                const rateIn = row.querySelector('.rate-input');
+                                const amtEl = row.querySelector('.col-amount');
+
+                                if (snIn && document.activeElement !== snIn && snIn.value !== rowData.sn) snIn.value = rowData.sn;
+                                if (partEl && document.activeElement !== partEl && partEl.innerText !== rowData.particular) partEl.innerText = rowData.particular;
+                                if (unitSel && document.activeElement !== unitSel && unitSel.value !== rowData.unit) unitSel.value = rowData.unit;
+                                if (wIn && document.activeElement !== wIn && wIn.value !== rowData.width) wIn.value = rowData.width;
+                                if (lIn && document.activeElement !== lIn && lIn.value !== rowData.length) lIn.value = rowData.length;
+                                if (hIn && document.activeElement !== hIn && hIn.value !== rowData.height) hIn.value = rowData.height;
+                                if (qtyIn && document.activeElement !== qtyIn && qtyIn.value !== rowData.qty) qtyIn.value = rowData.qty;
+                                if (daysIn && document.activeElement !== daysIn && daysIn.value !== rowData.days) daysIn.value = rowData.days;
+                                if (rateIn && document.activeElement !== rateIn && rateIn.value !== rowData.rate) rateIn.value = rowData.rate;
+                                if (amtEl && document.activeElement !== amtEl && amtEl.innerText !== rowData.amount) {
+                                    amtEl.innerText = rowData.amount;
+                                    amtEl.dataset.manual = rowData.manual ? "true" : "false";
+                                }
+                            }
+                        }
+                    });
+                }
+
+                if (remoteData.terms && Array.isArray(remoteData.terms)) {
+                    const termTexts = document.querySelectorAll('.terms-section .term-text');
+                    termTexts.forEach((el, idx) => {
+                        if (document.activeElement !== el && remoteData.terms[idx] !== undefined && el.innerText !== remoteData.terms[idx]) {
+                            el.innerText = remoteData.terms[idx];
+                        }
+                    });
+                }
+
+                const grandEl = document.getElementById('grand-total');
+                if (grandEl && document.activeElement !== grandEl && remoteData.grandTotal && remoteData.grandTotal.value !== undefined) {
+                    if (grandEl.innerText !== remoteData.grandTotal.value) {
+                        grandEl.innerText = remoteData.grandTotal.value;
+                        grandEl.dataset.manual = remoteData.grandTotal.manual ? "true" : "false";
+                    }
+                }
+            } finally {
+                isSyncingFromRemote = false;
+            }
+        }
+
+        // Start listening to real-time updates for active estimate sheet
+        function startRealTimeSync() {
+            if (!db || !currentSheetId) return;
+
+            if (activeListener) {
+                activeListener(); // Unsubscribe
+            }
+
+            activeListener = db.collection('estimates').doc(currentSheetId).onSnapshot(doc => {
+                if (doc.exists) {
+                    const remote = doc.data();
+                    if (remote && remote.data) {
+                        applyRemoteUpdate(remote.data);
+                    }
+                }
+            }, err => {
+                console.error("Real-time sync listen error:", err);
             });
         }
 
@@ -2328,6 +2494,7 @@
 
             fetchAndSyncFirestore().then(() => {
                 const loaded = loadData();
+                startRealTimeSync();
                 
                 if (!loaded) {
                     const rows = document.querySelectorAll('.item-row');
@@ -2366,10 +2533,13 @@
 
             // Set up auto-save listeners on input and change
             document.addEventListener('input', () => {
-                saveData();
+                if (!isSyncingFromRemote) saveData(false);
             });
             document.addEventListener('change', () => {
-                saveData();
+                if (!isSyncingFromRemote) saveData(true);
+            });
+            document.addEventListener('focusout', () => {
+                if (!isSyncingFromRemote) saveData(true);
             });
         });
 
