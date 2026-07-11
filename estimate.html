@@ -764,6 +764,49 @@
         .col-actions {
             padding: 8px 6px;
         }
+
+        /* Calculator Styles */
+        .calc-btn {
+            border: none;
+            outline: none;
+            padding: 15px 5px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-align: center;
+        }
+        .num-btn {
+            background: #2d2d35;
+            color: #fff;
+        }
+        .num-btn:hover {
+            background: #3d3d47;
+        }
+        .num-btn:active {
+            transform: scale(0.95);
+        }
+        .op-btn {
+            background: #f39c12;
+            color: #fff;
+        }
+        .op-btn:hover {
+            background: #e67e22;
+        }
+        .op-btn:active {
+            transform: scale(0.95);
+        }
+        .eq-btn {
+            background: #27ae60;
+            color: #fff;
+        }
+        .eq-btn:hover {
+            background: #2ecc71;
+        }
+        .eq-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 
@@ -775,6 +818,7 @@
         <div class="controls-group">
             <button onclick="confirmReset()" style="background: #6c757d;">🔄 નવી શીટ</button>
             <button onclick="clearCurrentSheet()" style="background: #e0a800; color: #212529;">🧹 શીટ સાફ કરો</button>
+            <button onclick="openModal('calculator-modal')" style="background: #ffc107; color: #212529;">🧮 કેલ્ક્યુલેટર</button>
             <button onclick="openModal('saved-sheets-modal')" style="background: #17a2b8;">📂 સાચવેલ શીટ્સ</button>
         </div>
         <div class="controls-group">
@@ -1563,6 +1607,48 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Calculator Modal -->
+    <div id="calculator-modal" class="modal-overlay" style="display: none; z-index: 100000;">
+        <div class="modal-content" style="max-width: 320px; padding: 15px; background: #1e1e24; color: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; color: var(--primary-yellow); display: flex; align-items: center; gap: 6px; font-family: sans-serif;">🧮 કેલ્ક્યુલેટર</h3>
+                <span class="close-modal" onclick="closeModal('calculator-modal')" style="color: #aaa; cursor: pointer; font-size: 20px; font-weight: bold;">&times;</span>
+            </div>
+            
+            <!-- Calculator Display -->
+            <div style="background: #0d0d0f; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: right; box-sizing: border-box;">
+                <div id="calc-expression" style="font-size: 13px; color: #888; min-height: 18px; word-wrap: break-word; font-family: monospace;"></div>
+                <div id="calc-display" style="font-size: 28px; font-weight: bold; overflow-x: auto; white-space: nowrap; color: #fff; margin-top: 5px; font-family: monospace;">0</div>
+            </div>
+            
+            <!-- Calculator Pad -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                <button type="button" class="calc-btn op-btn" onclick="clearCalc()">C</button>
+                <button type="button" class="calc-btn op-btn" onclick="backspaceCalc()">⌫</button>
+                <button type="button" class="calc-btn op-btn" onclick="appendCalc('/')">÷</button>
+                <button type="button" class="calc-btn op-btn" onclick="appendCalc('*')">×</button>
+                
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('7')">7</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('8')">8</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('9')">9</button>
+                <button type="button" class="calc-btn op-btn" onclick="appendCalc('-')">-</button>
+                
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('4')">4</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('5')">5</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('6')">6</button>
+                <button type="button" class="calc-btn op-btn" onclick="appendCalc('+')">+</button>
+                
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('1')">1</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('2')">2</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('3')">3</button>
+                <button type="button" class="calc-btn eq-btn" style="grid-row: span 2; height: 100%;" onclick="calculateResult()">=</button>
+                
+                <button type="button" class="calc-btn num-btn" style="grid-column: span 2;" onclick="appendCalc('0')">0</button>
+                <button type="button" class="calc-btn num-btn" onclick="appendCalc('.')">.</button>
+            </div>
+        </div>
     </div>
 
     <!-- Saved Sheets Modal -->
@@ -2783,6 +2869,117 @@
                 alert("Error capturing PDF");
             });
         }
+
+        // Calculator Logic
+        let calcExpr = '';
+        let calcRes = '0';
+        let needReset = false;
+
+        function appendCalc(char) {
+            const disp = document.getElementById('calc-display');
+            const expr = document.getElementById('calc-expression');
+            if (!disp || !expr) return;
+
+            if (needReset) {
+                if (['+', '-', '*', '/'].includes(char)) {
+                    calcExpr = calcRes;
+                } else {
+                    calcExpr = '';
+                }
+                needReset = false;
+            }
+
+            // Prevent multiple decimals in one number segment
+            if (char === '.') {
+                const parts = calcExpr.split(/[\+\-\*\/]/);
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.includes('.')) return;
+            }
+
+            calcExpr += char;
+            expr.innerText = calcExpr.replace(/\*/g, '×').replace(/\//g, '÷');
+            
+            // Show temporary calculation
+            try {
+                let evalExpr = calcExpr;
+                let tempRes = new Function(`return (${evalExpr});`)();
+                if (tempRes !== undefined && !isNaN(tempRes)) {
+                    disp.innerText = tempRes;
+                }
+            } catch (e) {}
+        }
+
+        function clearCalc() {
+            calcExpr = '';
+            calcRes = '0';
+            needReset = false;
+            document.getElementById('calc-display').innerText = '0';
+            document.getElementById('calc-expression').innerText = '';
+        }
+
+        function backspaceCalc() {
+            if (needReset) {
+                clearCalc();
+                return;
+            }
+            calcExpr = calcExpr.slice(0, -1);
+            document.getElementById('calc-expression').innerText = calcExpr.replace(/\*/g, '×').replace(/\//g, '÷');
+            
+            if (calcExpr === '') {
+                document.getElementById('calc-display').innerText = '0';
+            } else {
+                try {
+                    let tempRes = new Function(`return (${calcExpr});`)();
+                    if (tempRes !== undefined && !isNaN(tempRes)) {
+                        document.getElementById('calc-display').innerText = tempRes;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        function calculateResult() {
+            const disp = document.getElementById('calc-display');
+            const expr = document.getElementById('calc-expression');
+            if (!disp || !expr || !calcExpr) return;
+
+            try {
+                let res = new Function(`return (${calcExpr});`)();
+                if (res !== undefined && !isNaN(res)) {
+                    calcRes = String(res);
+                    disp.innerText = calcRes;
+                    expr.innerText = calcExpr.replace(/\*/g, '×').replace(/\//g, '÷') + ' =';
+                    needReset = true;
+                } else {
+                    disp.innerText = 'Error';
+                }
+            } catch (e) {
+                disp.innerText = 'Error';
+            }
+        }
+
+        // Keypress handler for calculator keyboard support
+        document.addEventListener('keydown', (e) => {
+            const calcModal = document.getElementById('calculator-modal');
+            if (calcModal && calcModal.style.display === 'flex') {
+                const key = e.key;
+                if (/[0-9\+\-\*\/\.]/.test(key)) {
+                    e.preventDefault();
+                    appendCalc(key);
+                } else if (key === 'Enter') {
+                    e.preventDefault();
+                    calculateResult();
+                } else if (key === 'Backspace') {
+                    e.preventDefault();
+                    backspaceCalc();
+                } else if (key === 'Escape') {
+                    e.preventDefault();
+                    closeModal('calculator-modal');
+                } else if (key === 'c' || key === 'C') {
+                    e.preventDefault();
+                    clearCalc();
+                }
+            }
+        });
     </script>
 </body>
 
