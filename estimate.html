@@ -258,6 +258,11 @@
 
         .col-particular {
             text-align: left;
+            background-image: linear-gradient(to bottom, transparent 23px, rgba(0, 0, 0, 0.1) 23px);
+            background-size: 100% 24px;
+            line-height: 24px;
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         .col-unit {
@@ -367,6 +372,9 @@
             font-weight: bold;
             font-size: 16px;
             padding: 8px;
+            background-color: #ffff00 !important; /* Yellow highlighter background */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .total-row td {
@@ -710,6 +718,40 @@
             background: #e0f7fa;
             color: #006064;
         }
+
+        /* Actions column styles */
+        .col-actions {
+            white-space: nowrap;
+            width: 90px;
+            text-align: center;
+        }
+
+        .action-btn-add,
+        .action-btn-add-cat,
+        .action-btn-delete {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 3px;
+            margin: 0 2px;
+            transition: transform 0.1s ease;
+            outline: none;
+        }
+
+        .action-btn-add:hover,
+        .action-btn-add-cat:hover,
+        .action-btn-delete:hover {
+            transform: scale(1.2);
+        }
+
+        /* Hide actions column when printing */
+        @media print {
+            .print-hidden,
+            .col-actions {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -776,6 +818,7 @@
                     <th class="col-days">દિવસ</th>
                     <th class="col-rate">ભાવ</th>
                     <th class="col-amount">રકમ</th>
+                    <th class="col-actions print-hidden" style="width: 90px;">ક્રિયાઓ</th>
                 </tr>
             </thead>
             <tbody id="quotation-body">
@@ -1558,14 +1601,14 @@
             document.querySelectorAll('.col-days, .col-rate').forEach(el => el.style.display = 'none');
             const totalSpanner = document.querySelector('#total-row td:first-child');
             if (totalSpanner) totalSpanner.setAttribute('colspan', '6');
-            document.querySelectorAll('.category-row td').forEach(el => el.setAttribute('colspan', '8'));
+            document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '8'));
         }
 
         function restoreAfterExport() {
             document.querySelectorAll('.col-days, .col-rate').forEach(el => el.style.display = '');
             const totalSpanner = document.querySelector('#total-row td:first-child');
             if (totalSpanner) totalSpanner.setAttribute('colspan', '8');
-            document.querySelectorAll('.category-row td').forEach(el => el.setAttribute('colspan', '10'));
+            document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '10'));
         }
 
         // Function to bind event listeners securely
@@ -2049,7 +2092,14 @@
                         if (rowData.type === 'category') {
                             const newRow = document.createElement('tr');
                             newRow.className = 'category-row';
-                            newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">${rowData.name}</td>`;
+                            newRow.innerHTML = `
+                                <td colspan="10" class="editable" contenteditable="true">${rowData.name}</td>
+                                <td class="col-actions print-hidden">
+                                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                                </td>
+                            `;
                             tbody.insertBefore(newRow, totalRow);
                         } else if (rowData.type === 'item') {
                             const newRow = document.createElement('tr');
@@ -2072,6 +2122,11 @@
                                 <td class="col-days"><input type="number" class="days-input" value="${rowData.days}" step="any" placeholder="1"></td>
                                 <td class="col-rate"><input type="number" class="rate-input" value="${rowData.rate}" step="any"></td>
                                 <td class="col-amount amount-display editable" contenteditable="true" data-manual="${rowData.manual}">${rowData.amount}</td>
+                                <td class="col-actions print-hidden">
+                                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                                </td>
                             `;
                             tbody.insertBefore(newRow, totalRow);
                         }
@@ -2117,12 +2172,94 @@
             }
         }
 
+        // Recalculate Serial Numbers (S/N) after insertions or deletions
+        function recalculateSns() {
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach((row, index) => {
+                const snInput = row.querySelector('.sn-input');
+                if (snInput) {
+                    snInput.value = index + 1;
+                }
+            });
+        }
+
+        // Insert Item Row after a specific row
+        function insertItemAfter(targetRow) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'item-row';
+
+            newRow.innerHTML = `
+                <td class="col-sn"><input type="number" class="sn-input" value=""></td>
+                <td class="col-particular editable" contenteditable="true"></td>
+                <td class="col-unit">
+                    <select class="unit-select">
+                        <option value="ચો.ફુટ">ચો.ફુટ</option>
+                        <option value="સેટ">સેટ</option>
+                        <option value="નંગ">નંગ</option>
+                        <option value="રનિંગ ફુટ">રનિંગ ફુટ</option>
+                    </select>
+                </td>
+                <td class="col-width"><input type="number" class="w-input" value="" step="any"></td>
+                <td class="col-length"><input type="number" class="l-input" value="" step="any"></td>
+                <td class="col-height"><input type="number" class="h-input" value="" step="any"></td>
+                <td class="col-qty"><input type="number" class="qty-input" value="" step="any"></td>
+                <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1"></td>
+                <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
+                <td class="col-amount amount-display editable" contenteditable="true">0</td>
+                <td class="col-actions print-hidden">
+                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                </td>
+            `;
+
+            targetRow.parentNode.insertBefore(newRow, targetRow.nextSibling);
+            bindInputs(newRow);
+            recalculateSns();
+            calculateTotals();
+            saveData();
+        }
+
+        // Insert Category Row after a specific row
+        function insertCategoryAfter(targetRow) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'category-row';
+            newRow.innerHTML = `
+                <td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>
+                <td class="col-actions print-hidden">
+                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                </td>
+            `;
+
+            targetRow.parentNode.insertBefore(newRow, targetRow.nextSibling);
+            saveData();
+        }
+
+        // Delete specific row
+        function deleteRow(row) {
+            if (confirm("શું તમે આ રો (Row) ડીલીટ કરવા માંગો છો?")) {
+                row.remove();
+                recalculateSns();
+                calculateTotals();
+                saveData();
+            }
+        }
+
         // Add Category Row
         function addCategoryRow() {
             const tbody = document.getElementById('quotation-body');
             const newRow = document.createElement('tr');
             newRow.className = 'category-row';
-            newRow.innerHTML = `<td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>`;
+            newRow.innerHTML = `
+                <td colspan="10" class="editable" contenteditable="true">નવો વિભાગ</td>
+                <td class="col-actions print-hidden">
+                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                </td>
+            `;
             const totalRow = document.getElementById('total-row');
             tbody.insertBefore(newRow, totalRow);
             saveData();
@@ -2135,7 +2272,6 @@
             const newRow = document.createElement('tr');
             newRow.className = 'item-row';
 
-            // Auto increment sn
             const rows = document.querySelectorAll('.item-row');
             const nextSn = rows.length + 1;
 
@@ -2157,6 +2293,11 @@
                 <td class="col-days"><input type="number" class="days-input" value="" step="any" placeholder="1"></td>
                 <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
                 <td class="col-amount amount-display editable" contenteditable="true">0</td>
+                <td class="col-actions print-hidden">
+                    <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                    <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                    <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                </td>
             `;
             tbody.insertBefore(newRow, totalRow);
             bindInputs(newRow);
@@ -2190,6 +2331,23 @@
 
             fetchAndSyncFirestore().then(() => {
                 const loaded = loadData();
+                
+                if (!loaded) {
+                    const rows = document.querySelectorAll('.item-row');
+                    rows.forEach(row => {
+                        if (!row.querySelector('.col-actions')) {
+                            const td = document.createElement('td');
+                            td.className = 'col-actions print-hidden';
+                            td.style.textAlign = 'center';
+                            td.innerHTML = `
+                                <button type="button" onclick="insertItemAfter(this.parentNode.parentNode)" class="action-btn-add" title="નીચે આઈટમ ઉમેરો">➕</button>
+                                <button type="button" onclick="insertCategoryAfter(this.parentNode.parentNode)" class="action-btn-add-cat" title="નીચે વિભાગ ઉમેરો">📂</button>
+                                <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
+                            `;
+                            row.appendChild(td);
+                        }
+                    });
+                }
                 
                 const rows = document.querySelectorAll('.item-row');
                 rows.forEach(r => bindInputs(r));
