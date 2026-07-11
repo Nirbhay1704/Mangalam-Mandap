@@ -763,6 +763,38 @@
         .col-actions {
             padding: 8px 6px;
         }
+
+        /* Autocomplete Suggestions */
+        .autocomplete-suggestions {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #888888;
+            border-top: none;
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            border-radius: 0 0 4px 4px;
+            min-width: 180px;
+        }
+
+        .autocomplete-suggestion {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-suggestion:hover {
+            background-color: #fff9e6;
+            color: var(--primary-red);
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -781,7 +813,7 @@
             <button onclick="shareToWhatsApp()" style="background: #25d366;">🟢 શેર (WhatsApp)</button>
         </div>
         <div class="controls-group">
-            <button id="sync-settings-btn" onclick="openModal('sync-settings-modal')" style="background: #6c757d;">⚙️ સિંક સેટિંગ્સ</button>
+            <button id="sync-settings-btn" onclick="openModal('sync-settings-modal')" style="background: #6c757d;">⚙️ સેટિંગ્સ</button>
         </div>
     </div>
 
@@ -1470,10 +1502,25 @@
                     <td class="col-rate"><input type="number" class="rate-input" value="" step="any"></td>
                     <td class="col-amount amount-display editable" contenteditable="true">0</td>
                 </tr>
-                <tr class="total-row" id="total-row">
+                <tr class="total-row" id="subtotal-row">
                     <td colspan="8"></td>
-                    <td style="text-align: right;">ટોટલ</td>
-                    <td style="text-align: right;" id="grand-total" class="editable" contenteditable="true">0.00</td>
+                    <td style="text-align: right;">સબ ટોટલ</td>
+                    <td style="text-align: right;" id="sub-total">0.00</td>
+                </tr>
+                <tr class="total-row" id="discount-row">
+                    <td colspan="8"></td>
+                    <td style="text-align: right;">ડિસ્કાઉન્ટ (%)</td>
+                    <td style="text-align: right;" id="discount-percent" class="editable" contenteditable="true">0</td>
+                </tr>
+                <tr class="total-row" id="gst-row">
+                    <td colspan="8"></td>
+                    <td style="text-align: right;">જીએસટી (%)</td>
+                    <td style="text-align: right;" id="gst-percent" class="editable" contenteditable="true">0</td>
+                </tr>
+                <tr class="total-row" id="grand-total-row">
+                    <td colspan="8"></td>
+                    <td style="text-align: right; background-color: var(--primary-yellow); color: var(--text-dark);">ફાઇનલ ટોટલ</td>
+                    <td style="text-align: right; background-color: var(--primary-yellow); color: var(--text-dark); font-size: 15px;" id="grand-total" class="editable" contenteditable="true">0.00</td>
                 </tr>
             </tbody>
         </table>
@@ -1526,7 +1573,7 @@
     <div id="sync-settings-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ સિંક સેટિંગ્સ (Cloud Sync Settings)</h2>
+                <h2>⚙️ સેટિંગ્સ (Settings)</h2>
                 <span class="close-modal" onclick="closeModal('sync-settings-modal')">&times;</span>
             </div>
             <div style="font-size: 13px; line-height: 1.6; color: #555; margin-bottom: 15px; text-align: left;">
@@ -1542,6 +1589,25 @@
             <textarea id="firebase-config-input" placeholder="કોપી કરેલો firebaseConfig કોડ અહિં પેસ્ટ કરો...&#10;&#10;const firebaseConfig = {&#10;  apiKey: '...',&#10;  ...&#10;};" style="width: 100%; height: 180px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 15px; box-sizing: border-box; resize: vertical; outline: none;"></textarea>
             <button onclick="saveFirebaseConfig()" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px;">💾 સેવ અને કનેક્ટ કરો</button>
             <div id="db-status-info" style="margin-top: 15px; text-align: center; font-weight: bold; font-size: 14px;"></div>
+
+            <h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid var(--primary-yellow); padding-bottom: 5px; text-align: left;">🖨️ પ્રિન્ટ કોલમ સેટિંગ્સ (કોલમ છુપાવો)</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; text-align: left;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="hide-width-checkbox" onchange="togglePrintColumn('col-width', this.checked)"> પહોળાઈ (Width) છુપાવો
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="hide-length-checkbox" onchange="togglePrintColumn('col-length', this.checked)"> લંબાઈ (Length) છુપાવો
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="hide-height-checkbox" onchange="togglePrintColumn('col-height', this.checked)"> ઊંચાઈ (Height) છુપાવો
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="hide-days-checkbox" onchange="togglePrintColumn('col-days', this.checked)"> દિવસ (Days) છુપાવો
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="hide-rate-checkbox" onchange="togglePrintColumn('col-rate', this.checked)"> ભાવ (Rate) છુપાવો
+                </label>
+            </div>
         </div>
     </div>
 
@@ -1552,8 +1618,40 @@
             return num % 1 === 0 ? num.toString() : num.toFixed(2);
         }
 
+        let printColumnSettings = {
+            'col-width': false,
+            'col-length': false,
+            'col-height': false,
+            'col-days': false,
+            'col-rate': false
+        };
+
+        const savedColumnSettings = localStorage.getItem('mangalam_mandap_print_columns');
+        if (savedColumnSettings) {
+            try {
+                printColumnSettings = JSON.parse(savedColumnSettings);
+            } catch (e) {
+                console.error("Error loading column settings:", e);
+            }
+        }
+
+        function togglePrintColumn(columnClass, isChecked) {
+            printColumnSettings[columnClass] = isChecked;
+            localStorage.setItem('mangalam_mandap_print_columns', JSON.stringify(printColumnSettings));
+        }
+
+        function initPrintColumnCheckboxes() {
+            Object.keys(printColumnSettings).forEach(colClass => {
+                const suffix = colClass.split('-')[1];
+                const checkbox = document.getElementById(`hide-${suffix}-checkbox`);
+                if (checkbox) {
+                    checkbox.checked = printColumnSettings[colClass];
+                }
+            });
+        }
+
         function calculateTotals() {
-            let grandTotal = 0;
+            let subTotal = 0;
             const rows = document.querySelectorAll('.item-row');
 
             rows.forEach(row => {
@@ -1568,7 +1666,7 @@
 
                     const l = lInput && lInput.value ? parseFloat(lInput.value) : 0;
                     const w = wInput && wInput.value ? parseFloat(wInput.value) : 0;
-                    const h = hInput && hInput.value ? parseFloat(hInput.value) : 0; // Not commonly requested, 0 default
+                    const h = hInput && hInput.value ? parseFloat(hInput.value) : 0;
 
                     const qty = qtyInput && qtyInput.value ? parseFloat(qtyInput.value) : 0;
                     const rate = rateInput && rateInput.value ? parseFloat(rateInput.value) : 0;
@@ -1582,7 +1680,7 @@
                     if (!isManual) {
                         if (l > 0 && w > 0) {
                             amount = l * w * rate * days;
-                            if (qty > 0) amount *= qty; // Multiply qty if they also added pieces for multiple items of same L * W
+                            if (qty > 0) amount *= qty;
                         } else if (qty > 0) {
                             amount = qty * rate * days;
                         } else if (rate > 0) {
@@ -1592,13 +1690,28 @@
                     } else {
                         amount = parseFloat(amountDisplay.innerText.replace(/[^\d.-]/g, '')) || 0;
                     }
-                    grandTotal += amount;
+                    subTotal += amount;
                 }
             });
 
+            const subtotalEl = document.getElementById('sub-total');
+            if (subtotalEl) {
+                subtotalEl.innerText = formatNumber(subTotal);
+            }
+
+            const discountPercentEl = document.getElementById('discount-percent');
+            const gstPercentEl = document.getElementById('gst-percent');
             const grandTotalEl = document.getElementById('grand-total');
+
+            const discountPercent = discountPercentEl ? parseFloat(discountPercentEl.innerText) || 0 : 0;
+            const gstPercent = gstPercentEl ? parseFloat(gstPercentEl.innerText) || 0 : 0;
+
+            const discountAmount = subTotal * (discountPercent / 100);
+            const gstAmount = (subTotal - discountAmount) * (gstPercent / 100);
+            const calculatedGrandTotal = subTotal - discountAmount + gstAmount;
+
             if (grandTotalEl && grandTotalEl.dataset.manual !== "true") {
-                grandTotalEl.innerText = formatNumber(grandTotal);
+                grandTotalEl.innerText = formatNumber(calculatedGrandTotal);
             }
         }
 
@@ -1606,17 +1719,47 @@
         window.onafterprint = function () { restoreAfterExport(); };
 
         function prepareForExport() {
-            document.querySelectorAll('.col-days, .col-rate, .col-actions').forEach(el => el.style.display = 'none');
-            const totalSpanner = document.querySelector('#total-row td:first-child');
-            if (totalSpanner) totalSpanner.setAttribute('colspan', '6');
-            document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '8'));
+            // Hide col-actions unconditionally
+            document.querySelectorAll('.col-actions').forEach(el => el.style.display = 'none');
+            
+            // Hide chosen printing columns
+            let hiddenCount = 0;
+            Object.keys(printColumnSettings).forEach(colClass => {
+                if (printColumnSettings[colClass]) {
+                    document.querySelectorAll('.' + colClass).forEach(el => el.style.display = 'none');
+                    hiddenCount++;
+                }
+            });
+
+            // Adjust colspans dynamically
+            const categoryColspan = 10 - hiddenCount;
+            const spannerColspan = 8 - hiddenCount;
+
+            document.querySelectorAll('.category-row td:first-child').forEach(el => {
+                el.setAttribute('colspan', categoryColspan.toString());
+            });
+
+            const spanners = document.querySelectorAll('#subtotal-row td:first-child, #discount-row td:first-child, #gst-row td:first-child, #grand-total-row td:first-child');
+            spanners.forEach(el => {
+                el.setAttribute('colspan', spannerColspan.toString());
+            });
         }
 
         function restoreAfterExport() {
-            document.querySelectorAll('.col-days, .col-rate, .col-actions').forEach(el => el.style.display = '');
-            const totalSpanner = document.querySelector('#total-row td:first-child');
-            if (totalSpanner) totalSpanner.setAttribute('colspan', '8');
-            document.querySelectorAll('.category-row td:first-child').forEach(el => el.setAttribute('colspan', '10'));
+            // Restore all hidden columns
+            document.querySelectorAll('.col-actions, .col-width, .col-length, .col-height, .col-days, .col-rate').forEach(el => {
+                el.style.display = '';
+            });
+
+            // Restore screen colspans
+            document.querySelectorAll('.category-row td:first-child').forEach(el => {
+                el.setAttribute('colspan', '10');
+            });
+
+            const spanners = document.querySelectorAll('#subtotal-row td:first-child, #discount-row td:first-child, #gst-row td:first-child, #grand-total-row td:first-child');
+            spanners.forEach(el => {
+                el.setAttribute('colspan', '8');
+            });
         }
 
         // Function to bind event listeners securely
@@ -1824,11 +1967,16 @@
             const customerVal = document.getElementById('customer-name-input').innerText.trim();
             const mobileVal = document.getElementById('mobile-input').innerText.trim();
 
+            const discountVal = parseFloat(document.getElementById('discount-percent').innerText) || 0;
+            const gstVal = parseFloat(document.getElementById('gst-percent').innerText) || 0;
+
             const data = {
                 village: document.getElementById('village-input').innerText,
                 eventDate: document.getElementById('event-date-input').innerText,
                 customerName: document.getElementById('customer-name-input').innerText,
                 mobile: document.getElementById('mobile-input').innerText,
+                discountPercent: discountVal,
+                gstPercent: gstVal,
                 rows: [],
                 terms: []
             };
@@ -1979,9 +2127,18 @@
                     if (mobileEl.innerText !== remoteData.mobile) mobileEl.innerText = remoteData.mobile;
                 }
 
+                const discountEl = document.getElementById('discount-percent');
+                const gstEl = document.getElementById('gst-percent');
+                if (discountEl && document.activeElement !== discountEl && remoteData.discountPercent !== undefined) {
+                    if (discountEl.innerText !== remoteData.discountPercent.toString()) discountEl.innerText = remoteData.discountPercent;
+                }
+                if (gstEl && document.activeElement !== gstEl && remoteData.gstPercent !== undefined) {
+                    if (gstEl.innerText !== remoteData.gstPercent.toString()) gstEl.innerText = remoteData.gstPercent;
+                }
+
                 if (remoteData.rows && Array.isArray(remoteData.rows)) {
                     const tbody = document.getElementById('quotation-body');
-                    const totalRow = document.getElementById('total-row');
+                    const totalRow = document.getElementById('subtotal-row');
                     
                     let currentRows = Array.from(tbody.querySelectorAll('.item-row, .category-row'));
                     
@@ -2256,7 +2413,7 @@
                 // Recreate rows
                 if (data.rows && data.rows.length > 0) {
                     const tbody = document.getElementById('quotation-body');
-                    const totalRow = document.getElementById('total-row');
+                    const totalRow = document.getElementById('subtotal-row');
 
                     // Clear all rows before totalRow
                     const existingItemRows = tbody.querySelectorAll('.item-row, .category-row');
@@ -2317,6 +2474,12 @@
                     });
                 }
 
+                // Populate discount and gst
+                const discountEl = document.getElementById('discount-percent');
+                const gstEl = document.getElementById('gst-percent');
+                if (discountEl) discountEl.innerText = data.discountPercent !== undefined ? data.discountPercent : '0';
+                if (gstEl) gstEl.innerText = data.gstPercent !== undefined ? data.gstPercent : '0';
+
                 // Populate grand total manual state
                 if (data.grandTotal) {
                     const grandTotalEl = document.getElementById('grand-total');
@@ -2348,6 +2511,11 @@
                 grandTotalEl.innerText = '0.00';
                 grandTotalEl.dataset.manual = "false";
             }
+
+            const discountEl = document.getElementById('discount-percent');
+            const gstEl = document.getElementById('gst-percent');
+            if (discountEl) discountEl.innerText = '0';
+            if (gstEl) gstEl.innerText = '0';
 
             document.querySelectorAll('.item-row').forEach(row => {
                 const wIn = row.querySelector('.w-input');
@@ -2478,7 +2646,7 @@
                     <button type="button" onclick="deleteRow(this.parentNode.parentNode)" class="action-btn-delete" title="ડીલીટ કરો">❌</button>
                 </td>
             `;
-            const totalRow = document.getElementById('total-row');
+            const totalRow = document.getElementById('subtotal-row');
             tbody.insertBefore(newRow, totalRow);
             saveData();
         }
@@ -2486,7 +2654,7 @@
         // Add Item Row
         function addItemRow() {
             const tbody = document.getElementById('quotation-body');
-            const totalRow = document.getElementById('total-row');
+            const totalRow = document.getElementById('subtotal-row');
             const newRow = document.createElement('tr');
             newRow.className = 'item-row';
 
@@ -2582,7 +2750,32 @@
                         grandTotalEl.innerText = formatNumber(val);
                         saveData();
                     });
+                // Bind discount and GST changes
+                const discountEl = document.getElementById('discount-percent');
+                const gstEl = document.getElementById('gst-percent');
+                if (discountEl) {
+                    discountEl.addEventListener('input', () => {
+                        calculateTotals();
+                    });
+                    discountEl.addEventListener('blur', () => {
+                        let val = parseFloat(discountEl.innerText) || 0;
+                        discountEl.innerText = val.toString();
+                        saveData(true);
+                    });
                 }
+                if (gstEl) {
+                    gstEl.addEventListener('input', () => {
+                        calculateTotals();
+                    });
+                    gstEl.addEventListener('blur', () => {
+                        let val = parseFloat(gstEl.innerText) || 0;
+                        gstEl.innerText = val.toString();
+                        saveData(true);
+                    });
+                }
+
+                initAutocomplete();
+                initPrintColumnCheckboxes();
 
                 calculateTotals();
             });
@@ -2649,6 +2842,119 @@
                     alert('Sharing failed. Please save the image instead.');
                 }
             });
+        }
+
+        // Predefined mandap decorator items list
+        const PREDEFINED_ITEMS = {
+            "ડોમ સભામંડપ": { unit: "ચો.ફુટ", rate: 5 },
+            "ડોમ રસોડા માટે": { unit: "ચો.ફુટ", rate: 5 },
+            "ડોમ બેક સાઈડ": { unit: "ચો.ફુટ", rate: 5 },
+            "સ્ટેજ": { unit: "ચો.ફુટ", rate: 8 },
+            "વ્યાસપીઠ સ્ટેજ": { unit: "ચો.ફુટ", rate: 8 },
+            "વ્યાસપીઠ": { unit: "સેટ", rate: 500 },
+            "સ્ટેજ થીમ": { unit: "સેટ", rate: 5000 },
+            "સ્ટેજ ફ્લોરીંગ": { unit: "ચો.ફુટ", rate: 4 },
+            "અલગ સ્ટેજ": { unit: "ચો.ફુટ", rate: 8 },
+            "રેલીંગ": { unit: "રનિંગ ફુટ", rate: 10 },
+            "ડોમ ફ્લોરીંગ": { unit: "ચો.ફુટ", rate: 4 },
+            "રસોડા ફ્લોરીંગ": { unit: "ચો.ફુટ", rate: 4 },
+            "મંડપ ગાળા": { unit: "ચો.ફુટ", rate: 5 },
+            "કાઉન્ટર પાટ": { unit: "નંગ", rate: 50 },
+            "કાઉન્ટર ટેબલ મઢીને તૈયાર": { unit: "નંગ", rate: 80 },
+            "વીઆઈપી સોફા": { unit: "નંગ", rate: 150 },
+            "સોફા સેટ": { unit: "સેટ", rate: 1200 },
+            "લાલ ગાદીવાળી ખુરશી": { unit: "નંગ", rate: 10 },
+            "પ્લાસ્ટિક ખુરશી": { unit: "નંગ", rate: 5 },
+            "ટેબલ કવર સાથે": { unit: "નંગ", rate: 60 },
+            "લાઈટ ડેકોરેશન": { unit: "સેટ", rate: 3000 },
+            "ગેટ ડેકોરેશન": { unit: "સેટ", rate: 4000 },
+            "ફેન્સિંગ ગાળા": { unit: "રનિંગ ફુટ", rate: 12 },
+            "સેલ્ફી પોઇન્ટ": { unit: "સેટ", rate: 1500 },
+            "કાર્પેટ લાલ": { unit: "ચો.ફુટ", rate: 2 },
+            "કાપડ સીલિંગ": { unit: "ચો.ફુટ", rate: 3 }
+        };
+
+        let activeSuggestRow = null;
+        let activeSuggestCell = null;
+
+        function initAutocomplete() {
+            let suggestDiv = document.getElementById('autocomplete-box');
+            if (!suggestDiv) {
+                suggestDiv = document.createElement('div');
+                suggestDiv.id = 'autocomplete-box';
+                suggestDiv.className = 'autocomplete-suggestions print-hidden';
+                suggestDiv.style.display = 'none';
+                document.body.appendChild(suggestDiv);
+            }
+
+            document.addEventListener('click', (e) => {
+                if (e.target !== activeSuggestCell && !suggestDiv.contains(e.target)) {
+                    suggestDiv.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                if (e.target.classList.contains('col-particular')) {
+                    showSuggestionsFor(e.target);
+                } else {
+                    suggestDiv.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target.classList.contains('col-particular')) {
+                    showSuggestionsFor(e.target);
+                } else {
+                    suggestDiv.style.display = 'none';
+                }
+            });
+        }
+
+        function showSuggestionsFor(cell) {
+            const query = cell.innerText.trim();
+            const suggestDiv = document.getElementById('autocomplete-box');
+            activeSuggestCell = cell;
+            activeSuggestRow = cell.parentNode;
+
+            const items = Object.keys(PREDEFINED_ITEMS);
+            const matches = items.filter(item => item.toLowerCase().includes(query.toLowerCase()));
+
+            if (matches.length === 0 || query === '') {
+                suggestDiv.style.display = 'none';
+                return;
+            }
+
+            suggestDiv.innerHTML = '';
+            matches.forEach(match => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'autocomplete-suggestion';
+                itemDiv.innerText = match;
+                itemDiv.onclick = () => {
+                    cell.innerText = match;
+                    suggestDiv.style.display = 'none';
+                    
+                    const info = PREDEFINED_ITEMS[match];
+                    if (info) {
+                        const unitSel = activeSuggestRow.querySelector('.unit-select');
+                        const rateIn = activeSuggestRow.querySelector('.rate-input');
+                        if (unitSel) {
+                            unitSel.value = info.unit;
+                            unitSel.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        if (rateIn) {
+                            rateIn.value = info.rate;
+                            rateIn.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                };
+                suggestDiv.appendChild(itemDiv);
+            });
+
+            const rect = cell.getBoundingClientRect();
+            suggestDiv.style.left = `${rect.left + window.scrollX}px`;
+            suggestDiv.style.top = `${rect.bottom + window.scrollY}px`;
+            suggestDiv.style.width = `${rect.width}px`;
+            suggestDiv.style.display = 'block';
         }
     </script>
 </body>
