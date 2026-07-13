@@ -853,18 +853,6 @@
             color: #212529 !important;
             font-weight: bold;
         }
-        .calendar-day.booked::after {
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: #f1c40f;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 4px;
-        }
-        .calendar-day.selected.booked::after {
-            background: #212529;
-        }
     </style>
 </head>
 
@@ -3146,43 +3134,7 @@
         }
 
         function loadCalendarEvents() {
-            if (!db) {
-                // Fallback to local storage values if offline
-                let history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
-                if (!Array.isArray(history)) history = [];
-                allEstimates = history.map(sheet => {
-                    const sheetData = sheet.data || {};
-                    return {
-                        id: sheet.id,
-                        eventDate: sheetData.eventDate || '',
-                        village: sheetData.village || '',
-                        name: sheetData.customerName || '',
-                        mobile: sheetData.mobile || '',
-                        grandTotal: (sheetData.grandTotal ? sheetData.grandTotal.value : '0.00') || '0.00'
-                    };
-                });
-                renderCalendar();
-                return;
-            }
-
-            db.collection("estimates").get().then(snapshot => {
-                allEstimates = [];
-                snapshot.forEach(doc => {
-                    const sheet = doc.data();
-                    const sheetData = sheet.data || {};
-                    allEstimates.push({
-                        id: doc.id,
-                        eventDate: sheetData.eventDate || '',
-                        village: sheetData.village || '',
-                        name: sheetData.customerName || '',
-                        mobile: sheetData.mobile || '',
-                        grandTotal: (sheetData.grandTotal ? sheetData.grandTotal.value : '0.00') || '0.00'
-                    });
-                });
-                renderCalendar();
-            }).catch(err => {
-                console.error("Error loading calendar events:", err);
-            });
+            renderCalendar();
         }
 
         function renderCalendar() {
@@ -3208,17 +3160,6 @@
                 calendarDaysContainer.appendChild(emptyDiv);
             }
             
-            // Build event map: YYYY-MM-DD
-            const eventMap = {};
-            allEstimates.forEach(est => {
-                const parsed = parseDateString(est.eventDate);
-                if (parsed) {
-                    const key = `${parsed.getFullYear()}-${parsed.getMonth()}-${parsed.getDate()}`;
-                    if (!eventMap[key]) eventMap[key] = [];
-                    eventMap[key].push(est);
-                }
-            });
-            
             const today = new Date();
             
             for (let day = 1; day <= lastDay; day++) {
@@ -3226,41 +3167,19 @@
                 dayDiv.className = 'calendar-day';
                 dayDiv.innerText = day;
                 
-                const dayKey = `${year}-${month}-${day}`;
-                const dayEvents = eventMap[dayKey] || [];
-                
-                if (dayEvents.length > 0) {
-                    dayDiv.classList.add('booked');
+                // When clicking any date, set it as the event date on the sheet
+                dayDiv.onclick = () => {
+                    closeModal('calendar-modal');
+                    const pad = (n) => n < 10 ? '0' + n : n;
+                    const selectedDateStr = `${pad(day)}-${pad(month + 1)}-${year}`;
                     
-                    // Directly load the sheet when clicking a booked date
-                    dayDiv.onclick = () => {
-                        closeModal('calendar-modal');
-                        const est = dayEvents[0];
-                        currentSheetId = est.id;
-                        localStorage.setItem('currentSheetId', currentSheetId);
-                        window.location.hash = currentSheetId;
-                        
-                        if (db) {
-                            db.collection("estimates").doc(currentSheetId).get().then(doc => {
-                                if (doc.exists) {
-                                    isSyncingFromRemote = true;
-                                    syncFromData(doc.data());
-                                    isSyncingFromRemote = false;
-                                    showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
-                                }
-                            });
-                        } else {
-                            const sheetsObj = JSON.parse(localStorage.getItem('mm_saved_sheets') || '{}');
-                            const data = sheetsObj[currentSheetId];
-                            if (data) {
-                                syncFromData(data);
-                                showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
-                            }
-                        }
-                    };
-                } else {
-                    dayDiv.style.cursor = 'default';
-                }
+                    const dateInput = document.getElementById('event-date-input');
+                    if (dateInput) {
+                        dateInput.innerText = selectedDateStr;
+                        saveData(true); // Immediate save
+                        showToast(`તારીખ સેટ કરી: ${selectedDateStr}`, "success");
+                    }
+                };
                 
                 if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                     dayDiv.classList.add('today');
