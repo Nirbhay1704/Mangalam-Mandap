@@ -3004,22 +3004,26 @@
         function adjustTableHeadersSticky() {
             const table = document.querySelector('table');
             const ths = document.querySelectorAll('th');
-            if (!table || ths.length === 0) return;
+            const container = document.querySelector('.a4-container');
+            if (!table || ths.length === 0 || !container) return;
             
-            const rect = table.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const tableLayoutTop = rect.top + scrollTop;
+            // Calculate absolute layout positions (100% constant and stable!)
+            const tableLayoutTop = table.offsetTop + container.offsetTop;
+            const tableHeight = table.offsetHeight;
             
             const isMobile = window.innerWidth <= 820;
             const targetTop = isMobile ? 0 : (document.querySelector('.controls')?.offsetHeight || 0);
             
-            // Get current scroll position of visual viewport (supporting pinch-zoom panning)
+            // Get current absolute visual scroll position
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const currentScrollTop = window.visualViewport ? window.visualViewport.pageTop : scrollTop;
+            
+            // Calculate offset relative to visual scroll
             const offset = currentScrollTop - tableLayoutTop + targetTop;
             
             if (offset > 0) {
                 const headerHeight = ths[0].offsetHeight;
-                const maxOffset = rect.height - headerHeight;
+                const maxOffset = tableHeight - headerHeight;
                 const safeOffset = Math.min(offset, maxOffset);
                 ths.forEach(th => {
                     th.style.transform = `translateY(${safeOffset}px)`;
