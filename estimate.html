@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=800">
     <title>Mangalam Mandap</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -261,6 +261,7 @@
             color: var(--text-dark);
             font-weight: bold;
             text-align: center;
+            position: -webkit-sticky;
             position: sticky;
             top: var(--controls-height, 57px);
             z-index: 10;
@@ -428,10 +429,9 @@
 
         /* Controls outside print */
         .controls {
-            position: fixed;
+            position: -webkit-sticky;
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
             z-index: 999;
             background: #ffffff;
             border-bottom: 3px solid var(--primary-yellow);
@@ -442,6 +442,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            min-width: 800px;
         }
 
         .controls-group {
@@ -2701,13 +2702,13 @@
         // Helper to adjust the sticky table header offset based on dynamic controls height
         function adjustStickyHeaderHeight() {
             const controls = document.querySelector('.controls');
-            const container = document.querySelector('.a4-container');
             if (controls) {
                 const height = controls.offsetHeight;
                 document.documentElement.style.setProperty('--controls-height', `${height}px`);
-                if (container) {
-                    container.style.marginTop = `${height + 20}px`;
-                }
+            }
+            const container = document.querySelector('.a4-container');
+            if (container) {
+                container.style.marginTop = '';
             }
         }
         window.addEventListener('resize', adjustStickyHeaderHeight);
