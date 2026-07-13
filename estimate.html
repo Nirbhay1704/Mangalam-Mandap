@@ -263,7 +263,7 @@
             text-align: center;
             position: -webkit-sticky;
             position: sticky;
-            top: var(--controls-height, 57px);
+            top: calc(var(--controls-height, 57px) + env(safe-area-inset-top, 0px));
             z-index: 10;
         }
 
@@ -432,6 +432,7 @@
             position: -webkit-sticky;
             position: sticky;
             top: 0;
+            top: env(safe-area-inset-top, 0px);
             z-index: 999;
             background: #ffffff;
             border-bottom: 3px solid var(--primary-yellow);
