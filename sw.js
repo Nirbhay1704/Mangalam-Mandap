@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mandap-cache-v3';
+const CACHE_NAME = 'mandap-cache-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -14,7 +14,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache v3');
+        console.log('Opened cache v5');
         return cache.addAll(urlsToCache);
       })
   );
