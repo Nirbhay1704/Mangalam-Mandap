@@ -3007,9 +3007,15 @@
             if (!table || ths.length === 0) return;
             
             const rect = table.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const tableLayoutTop = rect.top + scrollTop;
+            
             const isMobile = window.innerWidth <= 820;
             const targetTop = isMobile ? 0 : (document.querySelector('.controls')?.offsetHeight || 0);
-            const offset = targetTop - rect.top;
+            
+            // Get current scroll position of visual viewport (supporting pinch-zoom panning)
+            const currentScrollTop = window.visualViewport ? window.visualViewport.offsetTop : scrollTop;
+            const offset = currentScrollTop - tableLayoutTop + targetTop;
             
             if (offset > 0) {
                 const headerHeight = ths[0].offsetHeight;
