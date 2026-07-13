@@ -812,6 +812,16 @@
         .eq-btn:active {
             transform: scale(0.95);
         }
+        @media screen and (max-width: 820px) {
+            .controls {
+                position: relative !important;
+                top: auto !important;
+                box-shadow: none !important;
+            }
+            th {
+                top: env(safe-area-inset-top, 0px) !important;
+            }
+        }
     </style>
 </head>
 
@@ -2994,12 +3004,12 @@
         function adjustTableHeadersSticky() {
             const table = document.querySelector('table');
             const ths = document.querySelectorAll('th');
-            const controls = document.querySelector('.controls');
-            if (!table || ths.length === 0 || !controls) return;
+            if (!table || ths.length === 0) return;
             
             const rect = table.getBoundingClientRect();
-            const controlsHeight = controls.offsetHeight;
-            const offset = controlsHeight - rect.top;
+            const isMobile = window.innerWidth <= 820;
+            const targetTop = isMobile ? 0 : (document.querySelector('.controls')?.offsetHeight || 0);
+            const offset = targetTop - rect.top;
             
             if (offset > 0) {
                 const headerHeight = ths[0].offsetHeight;
