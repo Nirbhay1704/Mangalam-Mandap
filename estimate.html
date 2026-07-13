@@ -2025,7 +2025,6 @@
                     updateSavedSheetsList();
                 });
             } else if (modalId === 'calendar-modal') {
-                saveData(true);
                 loadCalendarEvents();
             }
         }
@@ -3167,18 +3166,10 @@
                 dayDiv.className = 'calendar-day';
                 dayDiv.innerText = day;
                 
-                // When clicking any date, set it as the event date on the sheet
+                // Clicking a day does nothing except highlight it as selected visually in the calendar
                 dayDiv.onclick = () => {
-                    closeModal('calendar-modal');
-                    const pad = (n) => n < 10 ? '0' + n : n;
-                    const selectedDateStr = `${pad(day)}-${pad(month + 1)}-${year}`;
-                    
-                    const dateInput = document.getElementById('event-date-input');
-                    if (dateInput) {
-                        dateInput.innerText = selectedDateStr;
-                        saveData(true); // Immediate save
-                        showToast(`તારીખ સેટ કરી: ${selectedDateStr}`, "success");
-                    }
+                    document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
+                    dayDiv.classList.add('selected');
                 };
                 
                 if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
