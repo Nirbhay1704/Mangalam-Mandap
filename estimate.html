@@ -3014,7 +3014,7 @@
             const targetTop = isMobile ? 0 : (document.querySelector('.controls')?.offsetHeight || 0);
             
             // Get current scroll position of visual viewport (supporting pinch-zoom panning)
-            const currentScrollTop = window.visualViewport ? window.visualViewport.offsetTop : scrollTop;
+            const currentScrollTop = window.visualViewport ? window.visualViewport.pageTop : scrollTop;
             const offset = currentScrollTop - tableLayoutTop + targetTop;
             
             if (offset > 0) {
