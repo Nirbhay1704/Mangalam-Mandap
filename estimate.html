@@ -428,8 +428,10 @@
 
         /* Controls outside print */
         .controls {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
             z-index: 999;
             background: #ffffff;
             border-bottom: 3px solid var(--primary-yellow);
@@ -440,7 +442,6 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            min-width: 800px;
         }
 
         .controls-group {
@@ -2700,9 +2701,13 @@
         // Helper to adjust the sticky table header offset based on dynamic controls height
         function adjustStickyHeaderHeight() {
             const controls = document.querySelector('.controls');
+            const container = document.querySelector('.a4-container');
             if (controls) {
                 const height = controls.offsetHeight;
                 document.documentElement.style.setProperty('--controls-height', `${height}px`);
+                if (container) {
+                    container.style.marginTop = `${height + 20}px`;
+                }
             }
         }
         window.addEventListener('resize', adjustStickyHeaderHeight);
