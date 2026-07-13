@@ -1729,21 +1729,7 @@
             <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-weight: bold; margin-bottom: 5px; font-size: 12px; color: #888;">
                 <div>રવિ</div><div>સોમ</div><div>મંગળ</div><div>બુધ</div><div>ગુરુ</div><div>શુક્ર</div><div>શનિ</div>
             </div>
-            <div id="calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 15px;"></div>
-            
-            <!-- Booking Details Panel -->
-            <div style="border-top: 1px solid #333; padding-top: 15px;">
-                <h4 id="selected-date-title" style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary-yellow);">બુકિંગ વિગત</h4>
-                <div id="booking-details-list" style="max-height: 120px; overflow-y: auto; font-size: 13px;">
-                    <div style="color: #888; text-align: center; padding: 10px;">તારીખ પસંદ કરો</div>
-                </div>
-            </div>
-            
-            <!-- Monthly Revenue Summary -->
-            <div style="margin-top: 15px; background: #0d0d0f; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                <span>ચાલુ મહિનાનું બુકિંગ: <strong id="month-booking-count" style="color: var(--primary-yellow);">0</strong></span>
-                <span>અંદાજિત આવક: <strong id="month-revenue-total" style="color: #27ae60;">₹0.00</strong></span>
-            </div>
+            <div id="calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;"></div>
         </div>
     </div>
 
@@ -3233,8 +3219,6 @@
                 }
             });
             
-            let monthBookings = 0;
-            let monthRevenue = 0;
             const today = new Date();
             
             for (let day = 1; day <= lastDay; day++) {
@@ -3247,112 +3231,53 @@
                 
                 if (dayEvents.length > 0) {
                     dayDiv.classList.add('booked');
-                    monthBookings += dayEvents.length;
-                    dayEvents.forEach(est => {
-                        const amount = parseFloat(est.grandTotal.toString().replace(/[^\d.-]/g, '')) || 0;
-                        monthRevenue += amount;
-                    });
+                    
+                    // Directly load the sheet when clicking a booked date
+                    dayDiv.onclick = () => {
+                        closeModal('calendar-modal');
+                        const est = dayEvents[0];
+                        currentSheetId = est.id;
+                        localStorage.setItem('currentSheetId', currentSheetId);
+                        window.location.hash = currentSheetId;
+                        
+                        if (db) {
+                            db.collection("estimates").doc(currentSheetId).get().then(doc => {
+                                if (doc.exists) {
+                                    isSyncingFromRemote = true;
+                                    syncFromData(doc.data());
+                                    isSyncingFromRemote = false;
+                                    showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
+                                }
+                            });
+                        } else {
+                            const sheetsObj = JSON.parse(localStorage.getItem('mm_saved_sheets') || '{}');
+                            const data = sheetsObj[currentSheetId];
+                            if (data) {
+                                syncFromData(data);
+                                showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
+                            }
+                        }
+                    };
+                } else {
+                    dayDiv.style.cursor = 'default';
                 }
                 
                 if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                     dayDiv.classList.add('today');
                 }
                 
-                dayDiv.onclick = () => {
-                    document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-                    dayDiv.classList.add('selected');
-                    showBookingDetails(day, month, year, dayEvents);
-                };
-                
                 calendarDaysContainer.appendChild(dayDiv);
             }
-            
-            document.getElementById('month-booking-count').innerText = monthBookings;
-            document.getElementById('month-revenue-total').innerText = `₹${formatNumber(monthRevenue)}`;
-        }
-
-        function showBookingDetails(day, month, year, events) {
-            const pad = (n) => n < 10 ? '0' + n : n;
-            const formattedDate = `${pad(day)}-${pad(month + 1)}-${year}`;
-            document.getElementById('selected-date-title').innerText = `બુકિંગ વિગત - ${formattedDate}`;
-            
-            const listContainer = document.getElementById('booking-details-list');
-            listContainer.innerHTML = '';
-            
-            if (events.length === 0) {
-                listContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 10px;">આ દિવસે કોઈ બુકિંગ નથી</div>';
-                return;
-            }
-            
-            events.forEach(est => {
-                const itemDiv = document.createElement('div');
-                itemDiv.style.background = '#2c2c35';
-                itemDiv.style.padding = '8px';
-                itemDiv.style.borderRadius = '6px';
-                itemDiv.style.marginBottom = '8px';
-                itemDiv.style.display = 'flex';
-                itemDiv.style.justifyContent = 'space-between';
-                itemDiv.style.alignItems = 'center';
-                
-                const infoDiv = document.createElement('div');
-                infoDiv.innerHTML = `
-                    <strong>${est.village || 'ગામ વગર'}</strong> - ${est.name || 'ગ્રાહક વગર'}<br>
-                    <span style="font-size: 11px; color: #aaa;">મો: ${est.mobile || '-'} | કુલ: ₹${est.grandTotal}</span>
-                `;
-                
-                const openBtn = document.createElement('button');
-                openBtn.type = 'button';
-                openBtn.innerText = 'ખોલો';
-                openBtn.style.background = 'var(--primary-yellow)';
-                openBtn.style.color = '#212529';
-                openBtn.style.border = 'none';
-                openBtn.style.padding = '4px 8px';
-                openBtn.style.borderRadius = '4px';
-                openBtn.style.cursor = 'pointer';
-                openBtn.style.fontSize = '12px';
-                openBtn.onclick = () => {
-                    closeModal('calendar-modal');
-                    currentSheetId = est.id;
-                    localStorage.setItem('currentSheetId', currentSheetId);
-                    window.location.hash = currentSheetId;
-                    
-                    if (db) {
-                        db.collection("estimates").doc(currentSheetId).get().then(doc => {
-                            if (doc.exists) {
-                                isSyncingFromRemote = true;
-                                syncFromData(doc.data());
-                                isSyncingFromRemote = false;
-                                showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
-                            }
-                        });
-                    } else {
-                        const sheetsObj = JSON.parse(localStorage.getItem('mm_saved_sheets') || '{}');
-                        const data = sheetsObj[currentSheetId];
-                        if (data) {
-                            syncFromData(data);
-                            showToast("શીટ સફળતાપૂર્વક લોડ થઈ ગઈ છે!", "success");
-                        }
-                    }
-                };
-                
-                itemDiv.appendChild(infoDiv);
-                itemDiv.appendChild(openBtn);
-                listContainer.appendChild(itemDiv);
-            });
         }
 
         function prevMonth() {
             currentCalDate.setMonth(currentCalDate.getMonth() - 1);
             renderCalendar();
-            document.getElementById('booking-details-list').innerHTML = '<div style="color: #888; text-align: center; padding: 10px;">તારીખ પસંદ કરો</div>';
-            document.getElementById('selected-date-title').innerText = 'બુકિંગ વિગત';
         }
 
         function nextMonth() {
             currentCalDate.setMonth(currentCalDate.getMonth() + 1);
             renderCalendar();
-            document.getElementById('booking-details-list').innerHTML = '<div style="color: #888; text-align: center; padding: 10px;">તારીખ પસંદ કરો</div>';
-            document.getElementById('selected-date-title').innerText = 'બુકિંગ વિગત';
         }
     </script>
 </body>
