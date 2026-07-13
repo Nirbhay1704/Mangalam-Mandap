@@ -2712,7 +2712,8 @@
             const controls = document.querySelector('.controls');
             if (controls) {
                 const height = controls.offsetHeight;
-                document.documentElement.style.setProperty('--controls-height', `${height}px`);
+                const scale = (window.visualViewport && (window.innerWidth <= 820 || window.visualViewport.scale > 1.01)) ? (1 / window.visualViewport.scale) : 1;
+                document.documentElement.style.setProperty('--controls-height', `${height * scale}px`);
             }
             const container = document.querySelector('.a4-container');
             if (container) {
@@ -2813,12 +2814,12 @@
 
             html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
                 restoreAfterExport();
-                controls.style.display = '';
+                restoreControlsVisibility();
                 const imgData = canvas.toDataURL('image/jpeg', 0.9);
                 callback(imgData);
             }).catch(err => {
                 restoreAfterExport();
-                controls.style.display = '';
+                restoreControlsVisibility();
                 console.error(err);
                 alert("Error capturing image");
             });
@@ -2841,7 +2842,7 @@
 
             html2canvas(container, { scale: 2, useCORS: true }).then(async canvas => {
                 restoreAfterExport();
-                controls.style.display = '';
+                restoreControlsVisibility();
 
                 try {
                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -2880,7 +2881,7 @@
                 }
             }).catch(err => {
                 restoreAfterExport();
-                controls.style.display = '';
+                restoreControlsVisibility();
                 console.error(err);
                 alert("Error capturing PDF");
             });
@@ -2996,6 +2997,50 @@
                 }
             }
         });
+
+        // Handle mobile Visual Viewport offsets (for pinch-zoom and horizontal scrolling)
+        let adjustControlsForViewport = null;
+        if (window.visualViewport) {
+            const controls = document.querySelector('.controls');
+            const container = document.querySelector('.a4-container');
+            adjustControlsForViewport = () => {
+                const vv = window.visualViewport;
+                const scale = 1 / vv.scale;
+                
+                // If mobile screen size or zoomed in, align to visual viewport
+                if (window.innerWidth <= 820 || vv.scale > 1.01) {
+                    controls.style.position = 'fixed';
+                    controls.style.top = '0';
+                    controls.style.left = '0';
+                    controls.style.width = `${vv.width}px`;
+                    controls.style.transform = `translate(${vv.offsetLeft}px, ${vv.offsetTop}px) scale(${scale})`;
+                    controls.style.transformOrigin = 'top left';
+                    
+                    // Shift the A4 container margin to prevent overlapping
+                    const baseHeight = controls.offsetHeight;
+                    if (container) {
+                        container.style.marginTop = `${(baseHeight * scale) + 20}px`;
+                    }
+                } else {
+                    // Standard desktop / unzoomed sticky flow
+                    controls.style.position = '';
+                    controls.style.top = '';
+                    controls.style.left = '';
+                    controls.style.width = '';
+                    controls.style.transform = '';
+                    controls.style.transformOrigin = '';
+                    if (container) {
+                        container.style.marginTop = '';
+                    }
+                }
+                adjustStickyHeaderHeight();
+            };
+            
+            window.visualViewport.addEventListener('scroll', adjustControlsForViewport);
+            window.visualViewport.addEventListener('resize', adjustControlsForViewport);
+            window.addEventListener('load', adjustControlsForViewport);
+            window.addEventListener('resize', adjustControlsForViewport);
+        }
     </script>
 </body>
 
