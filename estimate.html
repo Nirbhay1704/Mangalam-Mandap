@@ -2051,6 +2051,7 @@
                     updateSavedSheetsList();
                 });
             } else if (modalId === 'calendar-modal') {
+                saveData(true);
                 loadCalendarEvents();
             }
         }
@@ -3161,16 +3162,17 @@
         function loadCalendarEvents() {
             if (!db) {
                 // Fallback to local storage values if offline
-                const sheetsObj = JSON.parse(localStorage.getItem('mm_saved_sheets') || '{}');
-                allEstimates = Object.keys(sheetsObj).map(id => {
-                    const sheet = sheetsObj[id];
+                let history = JSON.parse(localStorage.getItem('mangalam_mandap_history') || '[]');
+                if (!Array.isArray(history)) history = [];
+                allEstimates = history.map(sheet => {
+                    const sheetData = sheet.data || {};
                     return {
-                        id: id,
-                        eventDate: sheet.eventDate || '',
-                        village: sheet.village || '',
-                        name: sheet.name || '',
-                        mobile: sheet.mobile || '',
-                        grandTotal: sheet.grandTotal || '0'
+                        id: sheet.id,
+                        eventDate: sheetData.eventDate || '',
+                        village: sheetData.village || '',
+                        name: sheetData.customerName || '',
+                        mobile: sheetData.mobile || '',
+                        grandTotal: (sheetData.grandTotal ? sheetData.grandTotal.value : '0.00') || '0.00'
                     };
                 });
                 renderCalendar();
@@ -3180,14 +3182,15 @@
             db.collection("estimates").get().then(snapshot => {
                 allEstimates = [];
                 snapshot.forEach(doc => {
-                    const data = doc.data();
+                    const sheet = doc.data();
+                    const sheetData = sheet.data || {};
                     allEstimates.push({
                         id: doc.id,
-                        eventDate: data.eventDate || '',
-                        village: data.village || '',
-                        name: data.name || '',
-                        mobile: data.mobile || '',
-                        grandTotal: data.grandTotal || '0'
+                        eventDate: sheetData.eventDate || '',
+                        village: sheetData.village || '',
+                        name: sheetData.customerName || '',
+                        mobile: sheetData.mobile || '',
+                        grandTotal: (sheetData.grandTotal ? sheetData.grandTotal.value : '0.00') || '0.00'
                     });
                 });
                 renderCalendar();
